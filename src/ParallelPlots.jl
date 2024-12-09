@@ -6,26 +6,49 @@ using CairoMakie
 using DataFrames
 
 
-function normalize(data::DataFrame)
+function normalize_DF(data::DataFrame)
     normalized_data = copy(data)
     for col in names(data)
         normalized_data[!, col] = (data[!, col] .- minimum(data[!, col])) ./
                                   (maximum(data[!, col]) - minimum(data[!, col]))
     end
+
+    return normalized_data
 end
-# create parallel coordinates plot
+
+
+
+
+
+"""
+    create_parallel_coordinates_plot(data::DataFrame, normalize::Bool)
+
+- Julia version: 1.10.5
+- Author: D
+
+# Arguments
+
+- `data::DataFrame`:
+- `normalize::Bool`:
+
+# Examples
+
+```jldoctest
+julia>
+```
+"""
 function create_parallel_coordinates_plot(data::DataFrame; normalize=false)
 
     # normalize when user parameter normalize == true
     if normalize
-        data = normalize(data)
+        data = normalize_DF(data)
     end
 
     # create figure and axis
     fig = Figure(figsize=(12, 6))
     ax = Axis(fig[1, 1],
         xlabel="Dimensions",
-        ylabel="Normalized Value",
+        ylabel=normalize ? "Normalized Value" : "Value",
         title="Parallel Coordinates Plot"
     )
 
@@ -49,7 +72,5 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize=false)
 
     return fig
 end
-
-
 
 end

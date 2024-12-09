@@ -37,9 +37,13 @@ Boolean: If Data should be normalized
 
 
 ### Working on this Package
-- Adding Dependencies
-  - `activate /path/to/package` or `activate .` when in package
+**use the Package**<br>
+`activate /path/to/package` or `activate .` when in package <br>
+you will then see: `(ParallelPlots) pkg>`
+- Adding external Dependencies
   - `add DepName`
 - Tests
-  - f
+  - `test`
+- Build
+  - `build`
 
