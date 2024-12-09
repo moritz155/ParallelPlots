@@ -13,37 +13,46 @@ _It was created with PkgTemplates.jl_
 
 ## Getting Started
 
-### Install & Dependencies
+### Install Dependencies & Use Package
 Please refer to this [Link](https://adrianhill.de/julia-ml-course/lectures/E1_Installation.html) for Installation of Julia
 
-You need to install differente packages.
+You need use the package (1-3) and install the dependencies (4-5)
 1. Open Julia with `julia` in your command prompt
 2. open the package manager with `]`
-<br> you should now see  
-3. Add the following modules:
-   1. `add CairoMakie`
-   2. `add DataFrames`
-   3. `add Random`
+3. Using our Package
+    * `activate /path/to/package` <br>
+      or<br>
+      `activate .` when Julia was opened with command prompt already in package path
+
+    * _you will then see: `(ParallelPlots) pkg>`_
+4. go back to `julia>` by pressing `CMD`+`C`
+5. `Import ParallelPlots` to download Dependencies and use the Package from Command line
 
 ### Usage
-you can create a plot with the following command
-`create_parallel_coordinates_plot(data::DataFrame)`
+Please read the [Docs](/docs/build/assets/index.html)
 
-you can call the function with the following parameter
-1. **data**<br>
-Dataframe: Where each Column will be a Dataset on the X-Axis
-2. **normalize**<br>
-Boolean: If Data should be normalized
+### Working on this Package / Cheatsheet
+1. Using the Package
+   * `activate /path/to/package` <br>
+   or<br>
+   `activate .` when Julia was opened with command prompt already in package path
+ 
+   * _you will then see: `(ParallelPlots) pkg>`_
+
+2. Running commands
+   * Adding external Dependencies
+     - `add DepName`
+   * Run Tests to check if Package is still working as intended 
+     - `test`
+   * Build
+     - `build`
+   * Precompile
+     - `precompile`
 
 
-### Working on this Package
-**use the Package**<br>
-`activate /path/to/package` or `activate .` when in package <br>
-you will then see: `(ParallelPlots) pkg>`
-- Adding external Dependencies
-  - `add DepName`
-- Tests
-  - `test`
-- Build
-  - `build`
+#### Create Docs
+* move to `./docs` folder with command line
+* run `julia --project make.jl`
+
+``
 

@@ -20,11 +20,17 @@ end
 
 
 
+
+
 """
     create_parallel_coordinates_plot(data::DataFrame, normalize::Bool)
 
 - Julia version: 1.10.5
-- Author: D
+
+# Constructors
+```julia
+ParallelPlots.create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false)
+```
 
 # Arguments
 
@@ -32,12 +38,17 @@ end
 - `normalize::Bool`:
 
 # Examples
+```@example
+julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=2,weight=60,age=20))
+julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=60:80,age=20:40))
+julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
 
-```jldoctest
-julia>
+
 ```
+
+
 """
-function create_parallel_coordinates_plot(data::DataFrame; normalize=false)
+function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false)
 
     # normalize when user parameter normalize == true
     if normalize
