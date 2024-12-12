@@ -29,7 +29,7 @@ You need use the package (1-3) and install the dependencies (4-5)
 5. `Import ParallelPlots` to download Dependencies and use the Package from Command line
 
 ### Usage
-Please read the [Docs](/docs/build/assets/index.html)
+Please read the [Docs](/docs/build/index.html)
 
 ### Working on this Package / Cheatsheet
 1. Using the Package
