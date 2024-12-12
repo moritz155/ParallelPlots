@@ -50,38 +50,53 @@ julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,w
 """
 function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false)
 
-    # normalize when user parameter normalize == true
+    # Normalize the data if required
     if normalize
         data = normalize_DF(data)
     end
 
-    # create figure and axis
-    fig = Figure(figsize=(12, 6))
-    ax = Axis(fig[1, 1],
-        xlabel="Dimensions",
-        ylabel=normalize ? "Normalized Value" : "Value",
-        title="Parallel Coordinates Plot"
-    )
+    # Parse the DataFrame into a list of arrays
+    parsed_data = [data[!, col] for col in names(data)]
 
-    # plotting
-    columns = names(data)
-    n_cols = length(columns)
+    # Compute limits for each column
+    limits = [(minimum(col), maximum(col)) for col in parsed_data]
 
-    for row in 1:nrow(data)
-        line_points = Point2f[]
-        for (i, col) in enumerate(columns)
-            push!(line_points, Point2f(i, data[row, col]))
+    let
+        s = Scene(camera=campixel!)
+
+        n = length(parsed_data) # Number of features
+        k = size(data, 1)       # Number of samples
+
+        # Plot dimensions
+        width = 600
+        height = 400
+        offset = 100
+
+        # Create axes
+        for i in 1:n
+            x = (i - 1) / (n - 1) * width
+            MakieLayout.LineAxis(s, limits=limits[i],
+                spinecolor=:black, labelfont="Arial",
+                ticklabelfont="Arial", spinevisible=true,
+                minorticks=IntervalsBetween(2),
+                endpoints=Point2f0[(offset + x, offset), (offset + x, offset + height)],
+                ticklabelalign=(:right, :center), labelvisible=true,
+                label=names(data)[i])
         end
-        lines!(ax, line_points, color=(:blue, 0.1))
+
+        # Draw lines connecting points for each row
+        for i in 1:k
+            values = [
+                Point2f0(
+                    offset + (j - 1) / (n - 1) * width,
+                    (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
+                )
+                for j in 1:n
+            ]
+            lines!(s, values, color=get(Makie.ColorSchemes.inferno, (i - 1) / (k - 1)),
+                show_axis=false)
+        end
+        return s
     end
-
-    # set x-ticks to column names
-    ax.xticks = (1:n_cols, columns)
-
-    # Add horizontal grid lines
-    hlines!(ax, [0, 1], color=:lightgray, linestyle=:dot)
-
-    return fig
 end
-
 end
