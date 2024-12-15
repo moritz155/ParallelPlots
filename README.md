@@ -2,8 +2,8 @@
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://moritz155.github.io/ParallelPlots.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://moritz155.github.io/ParallelPlots.jl/dev/)
-[![Build Status](https://github.com/moritz155/ParallelPlots.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/moritz155/ParallelPlots.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/moritz155/ParallelPlots.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/moritz155/ParallelPlots.jl)
+[![Build Status](https://github.com/moritz155/ParallelPlots/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/moritz155/ParallelPlots/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/moritz155/ParallelPlots/branch/main/graph/badge.svg)](https://codecov.io/gh/moritz155/ParallelPlots.jl)
 
 ## General
 This Project is for the TU-Berlin Course "Julia Programming for Machine Learning"
@@ -29,7 +29,7 @@ You need use the package (1-3) and install the dependencies (4-5)
 5. `Import ParallelPlots` to download Dependencies and use the Package from Command line
 
 ### Usage
-Please read the [Docs](/docs/build/assets/index.html)
+Please read the [Docs](/docs/build/index.html)
 
 ### Working on this Package / Cheatsheet
 1. Using the Package
