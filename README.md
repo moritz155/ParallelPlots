@@ -6,10 +6,13 @@
 [![Coverage](https://codecov.io/gh/moritz155/ParallelPlots/branch/main/graph/badge.svg)](https://codecov.io/gh/moritz155/ParallelPlots.jl)
 
 ## General
-This Project is for the TU-Berlin Course "Julia Programming for Machine Learning"
+This Project is for the TU-Berlin Course "Julia Programming for Machine Learning"<br>
 Please make sure, that Julia `1.10` is used!
 
-_It was created with PkgTemplates.jl_
+This Module will return you a nice Scene you can use to display your Data with a [Parallel Coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates)<br>
+<img src="test/parallel_coordinates_plot.png" width="300" />
+
+_This Module was created with PkgTemplates.jl_
 
 ## Getting Started
 

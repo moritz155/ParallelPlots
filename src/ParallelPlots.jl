@@ -64,12 +64,13 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
 
     let
         scene = Scene(camera=campixel!)
+        #TODO: Scene(resolution = (1200, 900), camera=campixel!)
 
         numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
         sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
         # Plot dimensions
-        width = 6000
+        width = 600
         height = 400
         offset = 100
 
