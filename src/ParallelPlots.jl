@@ -63,13 +63,13 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
     limits = [(minimum(col), maximum(col)) for col in parsed_data]
 
     let
-        s = Scene(camera=campixel!)
+        scene = Scene(camera=campixel!)
 
         numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
         sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
         # Plot dimensions
-        width = 600
+        width = 6000
         height = 400
         offset = 100
 
@@ -77,11 +77,12 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
         for i in 1:numberFeatures
             # x will be used to split the Scene for each feature
             x = (i - 1) / (numberFeatures - 1) * width
-            MakieLayout.LineAxis(s, limits=limits[i],
+            # LineAxis will create one Axis Vertical, for each Feature one Axis
+            MakieLayout.LineAxis(scene, limits=limits[i],
                 spinecolor=:black, labelfont="Arial",
                 ticklabelfont="Arial", spinevisible=true,
                 minorticks=IntervalsBetween(2),
-                # will create the maximum points on horizontal axis
+                # the lowest and highest point to maximize the Axis from Bottom to Top
                 endpoints=Point2f0[(offset + x, offset), (offset + x, offset + height)],
                 ticklabelalign=(:right, :center), labelvisible=true,
                 # using the names of the dataframe for display the axis
@@ -90,18 +91,21 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
 
         # Draw lines connecting points for each row
         for i in 1:sampleSize
-            values = [
+            dataPoints = [
+                # calcuating the point respectivly of the width and height in the Screen
                 Point2f0(
-                    # calcuating the point respectivly of the width and height in the Screen
+                    # calculates which feature the Point should be on
                     offset + (j - 1) / (numberFeatures - 1) * width,
+                    # calculates the Y axis value
                     (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
                 )
+                # iterates through the Features and creates for each feature the samplePoint (above)
                 for j in 1:numberFeatures
             ]
-            lines!(s, values, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)),
+            lines!(scene, dataPoints, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)),
                 show_axis=false)
         end
-        return s
+        return scene
     end
 end
 end
