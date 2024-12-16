@@ -16,9 +16,9 @@ _It was created with PkgTemplates.jl_
 ### Install Dependencies & Use Package
 Please refer to this [Link](https://adrianhill.de/julia-ml-course/lectures/E1_Installation.html) for Installation of Julia
 
-You need use the package (1-3) and install the dependencies (4-5)
+You need to use the package (1-3) and install the dependencies (4-5)
 1. Open Julia with `julia` in your command prompt
-2. open the package manager with `]`
+2. Open the package manager with `]`
 3. Using our Package
     * `activate /path/to/package` <br>
       or<br>
@@ -26,7 +26,7 @@ You need use the package (1-3) and install the dependencies (4-5)
 
     * _you will then see: `(ParallelPlots) pkg>`_
 4. go back to `julia>` by pressing `CMD`+`C`
-5. `Import ParallelPlots` to download Dependencies and use the Package from Command line
+5. `Import ParallelPlots` to download Dependencies and use the Package from Command Line
 
 ### Usage
 Please read the [Docs](/docs/build/index.html)
@@ -54,5 +54,5 @@ Please read the [Docs](/docs/build/index.html)
 * move to `./docs` folder with command line
 * run `julia --project make.jl`
 
-``
+
 

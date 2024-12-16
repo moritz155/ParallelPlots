@@ -39,8 +39,9 @@ ParallelPlots.create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=
 
 # Examples
 ```@example
-julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=2,weight=60,age=20))
 julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=60:80,age=20:40))
+
+# If you want to normalize the Data, you can add the value normalized=true, default is false
 julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
 
 
@@ -64,8 +65,8 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
     let
         s = Scene(camera=campixel!)
 
-        n = length(parsed_data) # Number of features
-        k = size(data, 1)       # Number of samples
+        numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
+        sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
         # Plot dimensions
         width = 600
@@ -73,27 +74,31 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
         offset = 100
 
         # Create axes
-        for i in 1:n
-            x = (i - 1) / (n - 1) * width
+        for i in 1:numberFeatures
+            # x will be used to split the Scene for each feature
+            x = (i - 1) / (numberFeatures - 1) * width
             MakieLayout.LineAxis(s, limits=limits[i],
                 spinecolor=:black, labelfont="Arial",
                 ticklabelfont="Arial", spinevisible=true,
                 minorticks=IntervalsBetween(2),
+                # will create the maximum points on horizontal axis
                 endpoints=Point2f0[(offset + x, offset), (offset + x, offset + height)],
                 ticklabelalign=(:right, :center), labelvisible=true,
+                # using the names of the dataframe for display the axis
                 label=names(data)[i])
         end
 
         # Draw lines connecting points for each row
-        for i in 1:k
+        for i in 1:sampleSize
             values = [
                 Point2f0(
-                    offset + (j - 1) / (n - 1) * width,
+                    # calcuating the point respectivly of the width and height in the Screen
+                    offset + (j - 1) / (numberFeatures - 1) * width,
                     (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
                 )
-                for j in 1:n
+                for j in 1:numberFeatures
             ]
-            lines!(s, values, color=get(Makie.ColorSchemes.inferno, (i - 1) / (k - 1)),
+            lines!(s, values, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)),
                 show_axis=false)
         end
         return s
