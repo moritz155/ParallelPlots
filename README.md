@@ -9,7 +9,7 @@
 This Project is for the TU-Berlin Course "Julia Programming for Machine Learning"<br>
 Please make sure, that Julia `1.10` is used!
 
-This Module will return you a nice Scene you can use to display your Data with a [Parallel Coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates)<br>
+This Module will return you a nice Scene you can use to display your Data with [Parallel Coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates)<br>
 <img src="test/parallel_coordinates_plot.png" width="300" />
 
 _This Module was created with PkgTemplates.jl_
@@ -32,7 +32,15 @@ You need to use the package (1-3) and install the dependencies (4-5)
 5. `Import ParallelPlots` to download Dependencies and use the Package from Command Line
 
 ### Usage
-Please read the [Docs](/docs/build/index.html)
+```@example
+julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=60:80,age=20:40))
+
+# If you want to normalize the Data, you can add the value normalized=true, default is false
+julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
+
+```
+
+Please read the [Docs](/docs/build/index.html) for further Information
 
 ### Working on this Package / Cheatsheet
 1. Using the Package
