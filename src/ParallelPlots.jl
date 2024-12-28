@@ -53,7 +53,7 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
 
     # Normalize the data if required
     if normalize
-        data = normalize_DF(data)
+        data = normalize_DF!(data)
     end
 
     # Parse the DataFrame into a list of arrays
