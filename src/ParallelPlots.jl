@@ -7,13 +7,12 @@ using DataFrames
 
 
 function normalize_DF(data::DataFrame)
-    normalized_data = copy(data)
     for col in names(data)
-        normalized_data[!, col] = (data[!, col] .- minimum(data[!, col])) ./
+        data[!, col] = (data[!, col] .- minimum(data[!, col])) ./
                                   (maximum(data[!, col]) - minimum(data[!, col]))
     end
 
-    return normalized_data
+    return data
 end
 
 
@@ -53,7 +52,7 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
 
     # Normalize the data if required
     if normalize
-        data = normalize_DF!(data)
+        data = normalize_DF(data)
     end
 
     # Parse the DataFrame into a list of arrays
