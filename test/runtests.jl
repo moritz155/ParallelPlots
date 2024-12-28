@@ -29,7 +29,7 @@ end
     #display
     fig = ParallelPlots.create_parallel_coordinates_plot(df)
 
-    @test fig != nothing
+    @test fig !== nothing
 
     save("parallel_coordinates_plot.png", fig)
     display(fig)
@@ -44,7 +44,7 @@ end
     #display
     fig = ParallelPlots.create_parallel_coordinates_plot(df, normalize=true)
 
-    @test fig != nothing
+    @test fig !== nothing
 
     print(fig)
 
