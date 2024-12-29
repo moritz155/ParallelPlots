@@ -7,13 +7,12 @@ using DataFrames
 
 
 function normalize_DF(data::DataFrame)
-    normalized_data = copy(data)
     for col in names(data)
-        normalized_data[!, col] = (data[!, col] .- minimum(data[!, col])) ./
+        data[!, col] = (data[!, col] .- minimum(data[!, col])) ./
                                   (maximum(data[!, col]) - minimum(data[!, col]))
     end
 
-    return normalized_data
+    return data
 end
 
 
