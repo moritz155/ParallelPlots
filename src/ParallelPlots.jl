@@ -17,7 +17,21 @@ function normalize_DF(data::DataFrame)
 end
 
 
-
+function input_check(data::DataFrame)
+    if data === nothing
+        throw(ArgumentError("Data cannot be nothing"))
+    end
+    if size(data, 2) < 2 # otherwise there will be a nullpointer exception later
+        throw(ArgumentError("Data must have at least two columns"))
+    end
+    if size(data, 1) < 2 # otherwise there will be a nullpointer exception later
+        throw(ArgumentError("Data must have at least two lines"))
+    end
+    if any(collect(any(ismissing.(c)) for c in eachcol(data))) # checks for missing values
+        println("There are missing values in the DataFrame.")
+        throw(ArgumentError("Data cannot have missing values"))
+    end
+end
 
 
 
@@ -51,6 +65,8 @@ julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,w
 """
 function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false)
 
+    input_check(data)
+
     # Normalize the data if required
     if normalize
         data = normalize_DF(data)
@@ -65,7 +81,6 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
     let
         scene = Scene(camera=campixel!)
         #TODO: Scene(resolution = (1200, 900), camera=campixel!)
-
         numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
         sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
