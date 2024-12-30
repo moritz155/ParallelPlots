@@ -62,7 +62,8 @@ julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,w
 
 
 """
-function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false)
+function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false, scene_width::Integer=800, scene_height::Integer=600)
+    input_check(data)
 
     input_check(data)
 
@@ -78,15 +79,16 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
     limits = [(minimum(col), maximum(col)) for col in parsed_data]
 
     let
-        scene = Scene(camera=campixel!)
+        #scene = Scene(camera=campixel!)
         #TODO: Scene(resolution = (1200, 900), camera=campixel!)
+        scene = Scene(resolution = (scene_width, scene_height), camera=campixel!)
         numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
         sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
         # Plot dimensions
-        width = 600
-        height = 400
-        offset = 100
+        width = scene_width * 0.75  # 75% of scene width
+        height = scene_height * 0.75  # 75% of scene width
+        offset = min(scene_width, scene_height) * 0.15  # 15% of scene dimensions
 
         # Create axes
         for i in 1:numberFeatures
