@@ -44,6 +44,7 @@ end
         ParallelPlots.create_parallel_coordinates_plot(df_one_line)
     end
 end
+
 @testset "default call" begin
 
     # Generate sample multivariate data
@@ -72,6 +73,23 @@ end
     print(fig)
 
     save("parallel_coordinates_plot_normalized.png", fig)
+    display(fig)
+
+end
+
+@testset "call with scene width & height" begin
+
+    # Generate sample multivariate data
+    df = create_person_df()
+
+    #display
+    fig = ParallelPlots.create_parallel_coordinates_plot(df, scene_width = 300, scene_height = 300)
+
+    @test fig !== nothing
+
+    print(fig)
+
+    save("parallel_coordinates_plot_300x300.png", fig)
     display(fig)
 
 end
