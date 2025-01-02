@@ -81,8 +81,7 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
     limits = [(minimum(col), maximum(col)) for col in parsed_data]
 
     let
-        #scene = Scene(camera=campixel!)
-        #TODO: Scene(resolution = (1200, 900), camera=campixel!)
+        # creates the Scene for the Plot
         scene = Scene(resolution = (scene_width, scene_height), camera=campixel!)
         numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
         sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
