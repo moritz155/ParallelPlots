@@ -38,6 +38,9 @@ julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,w
 # If you want to normalize the Data, you can add the value normalized=true, default is false
 julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
 
+# If you want to set the size of the plot (default width:800, height:600)
+julia> ParallelPlots.create_parallel_coordinates_plot( DataFrame(height=160:180,weight=60:80,age=20:40), scene_width=200, scene_height=200 )
+
 ```
 
 Please read the [Docs](/docs/build/index.html) for further Information

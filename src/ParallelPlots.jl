@@ -42,7 +42,7 @@ end
 
 # Constructors
 ```julia
-ParallelPlots.create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false)
+ParallelPlots.create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false, scene_width::Integer=800, scene_height::Integer=600)
 ```
 
 # Arguments
@@ -57,12 +57,15 @@ julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,w
 # If you want to normalize the Data, you can add the value normalized=true, default is false
 julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
 
+# If you want to set the size of the plot (default width:800, height:600)
+julia> ParallelPlots.create_parallel_coordinates_plot( DataFrame(height=160:180,weight=60:80,age=20:40), scene_width=200, scene_height=200 )
 
 ```
 
 
 """
-function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false)
+function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false, scene_width::Integer=800, scene_height::Integer=600)
+    input_check(data)
 
     input_check(data)
 
@@ -78,15 +81,15 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
     limits = [(minimum(col), maximum(col)) for col in parsed_data]
 
     let
-        scene = Scene(camera=campixel!)
-        #TODO: Scene(resolution = (1200, 900), camera=campixel!)
+        # creates the Scene for the Plot
+        scene = Scene(resolution = (scene_width, scene_height), camera=campixel!)
         numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
         sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
         # Plot dimensions
-        width = 600
-        height = 400
-        offset = 100
+        width = scene_width * 0.75  # 75% of scene width
+        height = scene_height * 0.75  # 75% of scene width
+        offset = min(scene_width, scene_height) * 0.15  # 15% of scene dimensions
 
         # Create axes
         for i in 1:numberFeatures
