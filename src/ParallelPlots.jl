@@ -47,8 +47,20 @@ ParallelPlots.create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=
 
 # Arguments
 
-- `data::DataFrame`:
-- `normalize::Bool`:
+- `data::DataFrame`: A DataFrame containing the data to be plotted.
+- `normalize::Bool`: Whether to normalize the data using Min-Max feature scaling.
+
+# Normalization
+Normalization is performed using Min-Max feature scaling:
+
+```julia
+normalized_value = (value - min(column)) / (max(column) - min(column))
+```
+
+If other normalization methods are required, they can be implemented and integrated into the `normalize_DF` function.
+
+# Return Type
+The function returns a `Scene` object, which can be displayed or saved as a visualization.
 
 # Examples
 ```@example
@@ -57,9 +69,20 @@ julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,w
 # If you want to normalize the Data, you can add the value normalized=true, default is false
 julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
 
-
 ```
 
+# Notes
+- The function relies on the CairoMakie backend for rendering. This dependency should be noted in the README, along with the resolution requirements for the generated plots.
+- Test file `test.jl` in the `src/` directory appears to be a leftover and could be cleaned up or moved to a `tests/` directory if relevant.
+
+# Examples
+```@example
+julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=60:80,age=20:40))
+
+# If you want to normalize the Data, you can add the value normalized=true, default is false
+julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
+
+```
 
 """
 function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false)
