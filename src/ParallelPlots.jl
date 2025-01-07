@@ -65,8 +65,8 @@ julia> ParallelPlots.create_parallel_coordinates_plot( DataFrame(height=160:180,
 
 """
 function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false, scene_width::Integer=800, scene_height::Integer=600)
-    input_check(data)
-
+    
+    # check the given DataFrame
     input_check(data)
 
     # Normalize the data if required
