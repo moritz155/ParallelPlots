@@ -128,6 +128,85 @@ function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false
 end
 
 
+################################### Creating the PCP by with the Example
+
+@recipe(ParallelPlot, df) do scene
+    Attributes(
+    # size, normalize attributes
+        normalize = false,
+        scene_width = 800,
+        scene_height = 600,
+    )
+end
+
+# This Function will completly renew the Plot
+# If we want to change only axis --> the axis must be send individually to this function!
+function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
+
+    # our first parameter is the DataFrame-Observable
+    df_observable  = pp[1]
+
+    # EXAMPLE: access Attributes
+    println("EXAMPLE: access Attributes")
+    println(pp.normalize)
+
+    # predefine Observable for the Plot. Will be 'filled' in the update_plot
+    plot_df = Observable(DataFrame())
+    xs = Observable(Float32[]) # TODO: empty Array?!
+    ys = Observable(Float32[])
+
+    println(pp)
+    # GET SCENE, YAY
+    scene = current_figure()
+
+
+
+    # this helper function will update our observables
+    # whenever df_observable change
+    function update_plot(data)
+
+        # TODO: recalc values etc.
+
+        # Example Update the value DF
+        plot_df[] = data
+
+
+        #######################
+        ### EXAMPLE BARPLOT
+        #######################
+
+
+        # do not update, just change vals
+        # it will trigger the rerender of the barplot
+        xs.val = 1:0.5:rand(10:30)
+        ys.val = 0.5 .* sin.(xs[])
+
+        # Example, add another graph
+        barplot!(pp, ys, xs, gap = 0, color = :red, strokecolor = :black, strokewidth = 1)
+
+        # update
+        ys[] = ys[]
+    end
+
+    # connect `update_plot` so that it is called whenever the DataFrame changes
+    Makie.Observables.onany(update_plot, df_observable)
+
+    # then call it once manually with the first dataFrame
+    # contents so we prepopulate all observables with correct values
+    update_plot(df_observable[])
+
+    # in the last step we plot into our `pp` ParallelPlot object, which means
+    # that our new plot is just made out of two simpler recipes layered on
+    # top of each other
+    barplot!(pp, xs, ys, gap = 0, color = :gray85, strokecolor = :black, strokewidth = 1)
+
+    # lastly we return the new ParallelPlot
+    pp
+end
+
+
+
+
 ##### Using example of StockValue https://docs.makie.org/v0.21/explanations/recipes#Example:-Stock-Chart
 ##### TODO: THIS PART IS FOR EXAMPLE USE ONLY; DELETE BEFORE MERGE!
 

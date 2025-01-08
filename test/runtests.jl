@@ -9,10 +9,9 @@ using JLD
 using DataFrames
 
 #generate Data
-function create_person_df()
+function create_person_df(n_samples = 10)
 
     Random.seed!(10)
-    n_samples = 10
     df = DataFrame(
         height=randn(n_samples),
         weight=randn(n_samples),
@@ -90,6 +89,27 @@ end
 
 end
 
+## Test the new PCP Reciepe
+@testset "PCP Reciepe" begin
+
+
+    df_observable = Observable(create_person_df())
+
+    fig, ax, sc = parallelplot(df_observable)
+
+    record(fig, "PCP_animation1.mp4", 10:200, framerate = 30) do t
+
+        # Update Dataframe
+        df_observable[] = create_person_df(t)
+
+        # NNEDED?!
+        # let's also update the axis limits because the plot will grow
+        autolimits!(ax)
+
+    end
+
+end
+
 
 
 
@@ -98,7 +118,7 @@ end
 ### TEST DRWATSON STOCKCHART
 
 
-@testset "DrWatson Stockchart DEBUG" begin
+@testset "Stockchart Example DEBUG" begin
 
     # Create Dict --> Needed?
     dfs = Dict(
@@ -132,10 +152,6 @@ end
     # TODO SAVE
     save("f1.png", f1)
     save("f2.png", f2)
-
-    println("XXXXXX")
-    println(ax)
-    println(sc)
 
     # Scanning folder C:\Users\LEON_L~1\AppData\Local\Temp\jl_oWVAfO\test for result files.
     # DrWatson Stockchart DEBUG: Error During Test at C:\Users\Leon_Laptop\Desktop\UNI\Julia\GIT\ParallelPlots\test\runtests.jl:108
