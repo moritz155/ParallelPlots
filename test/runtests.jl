@@ -59,7 +59,6 @@ end
     @test fig !== nothing
 
     save("parallel_coordinates_plot.png", fig)
-    display(fig)
 
 end
 
@@ -73,10 +72,7 @@ end
 
     @test fig !== nothing
 
-    print(fig)
-
     save("parallel_coordinates_plot_normalized.png", fig)
-    display(fig)
 
 end
 
@@ -90,10 +86,7 @@ end
 
     @test fig !== nothing
 
-    print(fig)
-
     save("parallel_coordinates_plot_300x300.png", fig)
-    display(fig)
 
 end
 
