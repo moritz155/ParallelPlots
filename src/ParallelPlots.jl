@@ -1,7 +1,5 @@
 module ParallelPlots
 
-    export create_parallel_coordinates_plot
-
 using CairoMakie
 using DataFrames
 
@@ -34,7 +32,7 @@ end
 
 
 
-
+#### TODO: DELETE THE COMMENT and rewrite it for the new function
 """
     create_parallel_coordinates_plot(data::DataFrame, normalize::Bool)
 
@@ -64,72 +62,11 @@ julia> ParallelPlots.create_parallel_coordinates_plot( DataFrame(height=160:180,
 
 
 """
-function create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false, scene_width::Integer=800, scene_height::Integer=600)
-    
-    # check the given DataFrame
-    input_check(data)
-
-    # Normalize the data if required
-    if normalize
-        data = normalize_DF(data)
-    end
-
-    # Parse the DataFrame into a list of arrays
-    parsed_data = [data[!, col] for col in names(data)]
-
-    # Compute limits for each column
-    limits = [(minimum(col), maximum(col)) for col in parsed_data]
-
-    let
-        # creates the Scene for the Plot
-        scene = Scene(resolution = (scene_width, scene_height), camera=campixel!)
-        numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
-        sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
-
-        # Plot dimensions
-        width = scene_width * 0.75  # 75% of scene width
-        height = scene_height * 0.75  # 75% of scene width
-        offset = min(scene_width, scene_height) * 0.15  # 15% of scene dimensions
-
-        # Create axes
-        for i in 1:numberFeatures
-            # x will be used to split the Scene for each feature
-            x = (i - 1) / (numberFeatures - 1) * width
-            # LineAxis will create one Axis Vertical, for each Feature one Axis
-            MakieLayout.LineAxis(scene, limits=limits[i],
-                spinecolor=:black, labelfont="Arial",
-                ticklabelfont="Arial", spinevisible=true,
-                minorticks=IntervalsBetween(2),
-                # the lowest and highest point to maximize the Axis from Bottom to Top
-                endpoints=Point2f0[(offset + x, offset), (offset + x, offset + height)],
-                ticklabelalign=(:right, :center), labelvisible=true,
-                # using the names of the dataframe for display the axis
-                label=names(data)[i])
-        end
-
-        # Draw lines connecting points for each row
-        for i in 1:sampleSize
-            dataPoints = [
-                # calcuating the point respectivly of the width and height in the Screen
-                Point2f0(
-                    # calculates which feature the Point should be on
-                    offset + (j - 1) / (numberFeatures - 1) * width,
-                    # calculates the Y axis value
-                    (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
-                )
-                # iterates through the Features and creates for each feature the samplePoint (above)
-                for j in 1:numberFeatures
-            ]
-            lines!(scene, dataPoints, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)),
-                show_axis=false)
-        end
-        return scene
-    end
-end
 
 
-################################### Creating the PCP by with the Example
 
+
+# TODO WRITE COMMENT ON HOW TO USE?
 @recipe(ParallelPlot, df) do scene
     Attributes(
     # size, normalize attributes
@@ -151,12 +88,8 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
     # whenever df_observable change
     function update_plot(data)
 
-        # Get the Fig and empty it, so its nice and clean for the next itaration
-        fig = current_figure()
-        empty!(fig)
-
-        # check the given DataFrame
-        input_check(data) # TODO: throw Error when new Data is invalid
+    # check the given DataFrame
+        input_check(data)
 
         # Normalize the data if required
         if pp.normalize[] # TODO: what happens when the parameter is an observeable to? will it update?
@@ -169,61 +102,62 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
         # Compute limits for each column
         limits = [(minimum(col), maximum(col)) for col in parsed_data]
 
-        numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
-        sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
+        let
+            # creates the Scene for the Plot
+            #scene = Scene(resolution = (pp.scene_width[], pp.scene_height[]), camera=campixel!)
 
-        # Plot dimensions
-        width = pp.scene_width[] * 0.75  # 75% of scene width
-        height = pp.scene_height[] * 0.75  # 75% of scene width
-        offset = min(pp.scene_width[], pp.scene_height[]) * 0.15  # 15% of scene dimensions
+            fig = current_figure()
+            scene = fig.scene
 
-        # Create Axis
-        # in here, all the lines and the overlaying parallel Axis will be stored
-        ax = Axis(fig[1,1], title = "ParallelPlot")
-
-        # hide X and Y axis and the spines
-        hidespines!(ax)
-        hidedecorations!(ax)
-
-        # WE CAN USE MULTIPLE AXIS AND MOVE THEM CLOSE TO EACH OTHER.?
-        #ax1 = Axis(fig[1,1], title = "Axis 1")
-        #ax2 = Axis(fig[1,2], title = "Axis 2")
-
-        #for i in 1:numberFeatures
-        #    # x will be used to split the Scene for each feature
-        #    x = (i - 1) / (numberFeatures - 1) * width
-        #    # LineAxis will create one Axis Vertical, for each Feature one Axis
-        #    MakieLayout.LineAxis(scene, limits=limits[i],
-        #        spinecolor=:black, labelfont="Arial",
-        #        ticklabelfont="Arial", spinevisible=true,
-        #        minorticks=IntervalsBetween(2),
-        #        # the lowest and highest point to maximize the Axis from Bottom to Top
-        #        endpoints=Point2f0[(offset + x, offset), (offset + x, offset + height)],
-        #        ticklabelalign=(:right, :center), labelvisible=true,
-        #        # using the names of the dataframe for display the axis
-        #        label=names(data)[i])
-        #end
-
-        # Draw lines connecting points for each row
-        for i in 1:sampleSize
-            dataPoints = [
-               # calcuating the point respectivly of the width and height in the Screen
-               Point2f(
-                    # calculates which feature the Point should be on
-                    offset + (j - 1) / (numberFeatures - 1) * width,
-                    # calculates the Y axis value
-                    (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
-               )
-               # iterates through the Features and creates for each feature the samplePoint (above)
-               for j in 1:numberFeatures
-            ]
-            lines!(ax, dataPoints, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)))
+            # reset scene
+            empty!(fig.scene)
+            trim!(fig.layout)
+            empty!(fig.content)
+            fig.current_axis[] = nothing
 
 
+            numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
+            sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
+            # Plot dimensions
+            width = pp.scene_width[] * 0.75  # 75% of scene width
+            height = pp.scene_height[] * 0.75  # 75% of scene width
+            offset = min(pp.scene_width[], pp.scene_height[]) * 0.15  # 15% of scene dimensions
+
+            # Create axes
+            for i in 1:numberFeatures
+                # x will be used to split the Scene for each feature
+                x = (i - 1) / (numberFeatures - 1) * width
+                # LineAxis will create one Axis Vertical, for each Feature one Axis
+                MakieLayout.LineAxis(scene, limits=limits[i],
+                    spinecolor=:black, labelfont="Arial",
+                    ticklabelfont="Arial", spinevisible=true,
+                    minorticks=IntervalsBetween(2),
+                    # the lowest and highest point to maximize the Axis from Bottom to Top
+                    endpoints=Point2f0[(offset + x, offset), (offset + x, offset + height)],
+                    ticklabelalign=(:right, :center), labelvisible=true,
+                    # using the names of the dataframe for display the axis
+                    label=names(data)[i])
+            end
+
+            # Draw lines connecting points for each row
+            for i in 1:sampleSize
+                dataPoints = [
+                    # calcuating the point respectivly of the width and height in the Screen
+                    Point2f0(
+                        # calculates which feature the Point should be on
+                        offset + (j - 1) / (numberFeatures - 1) * width,
+                        # calculates the Y axis value
+                        (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
+                    )
+                    # iterates through the Features and creates for each feature the samplePoint (above)
+                    for j in 1:numberFeatures
+                ]
+                lines!(scene, dataPoints, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)),
+                    show_axis=false)
+            end
+            return scene
         end
-        autolimits!(ax)
-
 
     end
 
@@ -234,105 +168,12 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
     # contents so we prepopulate all observables with correct values
     update_plot(df_observable[])
 
+    # some Random Plot, else we get an error
+    lines!(pp, 1:9, iseven.(1:9) .- 0; color = :tomato)
+
     # lastly we return the new ParallelPlot
     pp
 end
-
-
-
-
-##### Using example of StockValue https://docs.makie.org/v0.21/explanations/recipes#Example:-Stock-Chart
-##### TODO: THIS PART IS FOR EXAMPLE USE ONLY; DELETE BEFORE MERGE!
-
-
-
-export StockValue
-struct StockValue{T<:Real}
-    open::T
-    close::T
-    high::T
-    low::T
-end
-
-@recipe(StockChart) do scene
-    Attributes(
-        downcolor = :red,
-        upcolor = :green,
-    )
-end
-
-
-function Makie.plot!(sc::StockChart{<:Tuple{AbstractVector{<:Real}, AbstractVector{<:StockValue}}})
-
-    # our first argument is an observable of parametric type AbstractVector{<:Real}
-    times = sc[1]
-    # our second argument is an observable of parametric type AbstractVector{<:StockValue}}
-    stockvalues = sc[2]
-
-    # we predefine a couple of observables for the linesegments
-    # and barplots we need to draw
-    # this is necessary because in Makie we want every recipe to be interactively updateable
-    # and therefore need to connect the observable machinery to do so
-    linesegs = Observable(Point2f0[])
-    bar_froms = Observable(Float32[])
-    bar_tos = Observable(Float32[])
-    colors = Observable(Bool[])
-
-    # this helper function will update our observables
-    # whenever `times` or `stockvalues` change
-    function update_plot(times, stockvalues)
-        colors[]
-
-        # clear the vectors inside the observables
-        empty!(linesegs[])
-        empty!(bar_froms[])
-        empty!(bar_tos[])
-        empty!(colors[])
-
-        # then refill them with our updated values
-        for (t, s) in zip(times, stockvalues)
-            push!(linesegs[], Point2f0(t, s.low))
-            push!(linesegs[], Point2f0(t, s.high))
-            push!(bar_froms[], s.open)
-            push!(bar_tos[], s.close)
-        end
-        append!(colors[], [x.close > x.open for x in stockvalues])
-        colors[] = colors[]
-    end
-
-    # connect `update_plot` so that it is called whenever `times`
-    # or `stockvalues` change
-    Makie.Observables.onany(update_plot, times, stockvalues)
-
-    # then call it once manually with the first `times` and `stockvalues`
-    # contents so we prepopulate all observables with correct values
-    update_plot(times[], stockvalues[])
-
-    # for the colors we just use a vector of booleans or 0s and 1s, which are
-    # colored according to a 2-element colormap
-    # we build this colormap out of our `downcolor` and `upcolor`
-    # we give the observable element type `Any` so it will not error when we change
-    # a color from a symbol like :red to a different type like RGBf(1, 0, 1)
-    colormap = Observable{Any}()
-    map!(colormap, sc.downcolor, sc.upcolor) do dc, uc
-        [dc, uc]
-    end
-
-    # in the last step we plot into our `sc` StockChart object, which means
-    # that our new plot is just made out of two simpler recipes layered on
-    # top of each other
-    linesegments!(sc, linesegs, color = colors, colormap = colormap)
-    barplot!(sc, times, bar_froms, fillto = bar_tos, color = colors, strokewidth = 0, colormap = colormap)
-
-    # lastly we return the new StockChart
-    sc
-end
-
-
-
-
-
-
 
 
 

@@ -32,6 +32,7 @@ You need to use the package (1-3) and install the dependencies (4-5)
 5. `Import ParallelPlots` to download Dependencies and use the Package from Command Line
 
 ### Usage
+# TODO: REWRITE
 ```@example
 julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=60:80,age=20:40))
 
