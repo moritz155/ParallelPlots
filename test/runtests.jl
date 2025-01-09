@@ -22,6 +22,43 @@ function create_person_df(n_samples = 10)
 
     return df
 end
+function create_car_df(n_samples = 10)
+
+    Random.seed!(10)
+    df = DataFrame(
+        horsepower=rand(60:300, n_samples),
+        weight=rand(90:300, n_samples),
+        age=rand(0:70, n_samples)
+    )
+
+    return df
+end
+
+## Test the new PCP Reciepe
+@testset "PCP Reciepe" begin
+
+    # create the Data
+    df_observable = Observable(create_person_df(2))
+
+    # create the Plot
+    fig, ax, sc = parallelplot(df_observable)
+
+    # Record for Debug purpose
+    record(fig, "PCP_recipe_animation.mp4", 2:60, framerate = 2) do t
+
+        # Update Dataframe
+        if(iseven(t))
+            df_observable[] = create_person_df(5)
+        else
+            df_observable[] = create_car_df(t)
+        end
+
+
+    end
+
+    # TODO: Test the Size for Changes
+
+end
 
 @testset "ArgumentError Tests" begin
     df_missing = DataFrame(Name=["Alice", "Bob", "Charlie"],
@@ -89,26 +126,7 @@ end
 
 end
 
-## Test the new PCP Reciepe
-@testset "PCP Reciepe" begin
 
-
-    df_observable = Observable(create_person_df())
-
-    fig, ax, sc = parallelplot(df_observable)
-
-    record(fig, "PCP_animation1.mp4", 10:200, framerate = 30) do t
-
-        # Update Dataframe
-        df_observable[] = create_person_df(t)
-
-        # NNEDED?!
-        # let's also update the axis limits because the plot will grow
-        autolimits!(ax)
-
-    end
-
-end
 
 
 

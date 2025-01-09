@@ -146,46 +146,85 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
     # our first parameter is the DataFrame-Observable
     df_observable  = pp[1]
 
-    # EXAMPLE: access Attributes
-    println("EXAMPLE: access Attributes")
-    println(pp.normalize)
-
-    # predefine Observable for the Plot. Will be 'filled' in the update_plot
-    plot_df = Observable(DataFrame())
-    xs = Observable(Float32[]) # TODO: empty Array?!
-    ys = Observable(Float32[])
-
-    println(pp)
-    # GET SCENE, YAY
-    scene = current_figure()
-
-
 
     # this helper function will update our observables
     # whenever df_observable change
     function update_plot(data)
 
-        # TODO: recalc values etc.
+        # Get the Fig and empty it, so its nice and clean for the next itaration
+        fig = current_figure()
+        empty!(fig)
 
-        # Example Update the value DF
-        plot_df[] = data
+        # check the given DataFrame
+        input_check(data) # TODO: throw Error when new Data is invalid
+
+        # Normalize the data if required
+        if pp.normalize[] # TODO: what happens when the parameter is an observeable to? will it update?
+            data = normalize_DF(data)
+        end
+
+        # Parse the DataFrame into a list of arrays
+        parsed_data = [data[!, col] for col in names(data)]
+
+        # Compute limits for each column
+        limits = [(minimum(col), maximum(col)) for col in parsed_data]
+
+        numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
+        sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
+
+        # Plot dimensions
+        width = pp.scene_width[] * 0.75  # 75% of scene width
+        height = pp.scene_height[] * 0.75  # 75% of scene width
+        offset = min(pp.scene_width[], pp.scene_height[]) * 0.15  # 15% of scene dimensions
+
+        # Create Axis
+        # in here, all the lines and the overlaying parallel Axis will be stored
+        ax = Axis(fig[1,1], title = "ParallelPlot")
+
+        # hide X and Y axis and the spines
+        hidespines!(ax)
+        hidedecorations!(ax)
+
+        # WE CAN USE MULTIPLE AXIS AND MOVE THEM CLOSE TO EACH OTHER.?
+        #ax1 = Axis(fig[1,1], title = "Axis 1")
+        #ax2 = Axis(fig[1,2], title = "Axis 2")
+
+        #for i in 1:numberFeatures
+        #    # x will be used to split the Scene for each feature
+        #    x = (i - 1) / (numberFeatures - 1) * width
+        #    # LineAxis will create one Axis Vertical, for each Feature one Axis
+        #    MakieLayout.LineAxis(scene, limits=limits[i],
+        #        spinecolor=:black, labelfont="Arial",
+        #        ticklabelfont="Arial", spinevisible=true,
+        #        minorticks=IntervalsBetween(2),
+        #        # the lowest and highest point to maximize the Axis from Bottom to Top
+        #        endpoints=Point2f0[(offset + x, offset), (offset + x, offset + height)],
+        #        ticklabelalign=(:right, :center), labelvisible=true,
+        #        # using the names of the dataframe for display the axis
+        #        label=names(data)[i])
+        #end
+
+        # Draw lines connecting points for each row
+        for i in 1:sampleSize
+            dataPoints = [
+               # calcuating the point respectivly of the width and height in the Screen
+               Point2f(
+                    # calculates which feature the Point should be on
+                    offset + (j - 1) / (numberFeatures - 1) * width,
+                    # calculates the Y axis value
+                    (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
+               )
+               # iterates through the Features and creates for each feature the samplePoint (above)
+               for j in 1:numberFeatures
+            ]
+            lines!(ax, dataPoints, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)))
 
 
-        #######################
-        ### EXAMPLE BARPLOT
-        #######################
+
+        end
+        autolimits!(ax)
 
 
-        # do not update, just change vals
-        # it will trigger the rerender of the barplot
-        xs.val = 1:0.5:rand(10:30)
-        ys.val = 0.5 .* sin.(xs[])
-
-        # Example, add another graph
-        barplot!(pp, ys, xs, gap = 0, color = :red, strokecolor = :black, strokewidth = 1)
-
-        # update
-        ys[] = ys[]
     end
 
     # connect `update_plot` so that it is called whenever the DataFrame changes
@@ -194,11 +233,6 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
     # then call it once manually with the first dataFrame
     # contents so we prepopulate all observables with correct values
     update_plot(df_observable[])
-
-    # in the last step we plot into our `pp` ParallelPlot object, which means
-    # that our new plot is just made out of two simpler recipes layered on
-    # top of each other
-    barplot!(pp, xs, ys, gap = 0, color = :gray85, strokecolor = :black, strokewidth = 1)
 
     # lastly we return the new ParallelPlot
     pp
