@@ -2,6 +2,11 @@
 *.jl.cov
 *.jl.mem
 .idea/
+
+#Test output images
+*.png
+*.svg
+
 /Manifest.toml
 /docs/Manifest.toml
 #/docs/build/
