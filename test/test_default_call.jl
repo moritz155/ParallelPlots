@@ -9,11 +9,10 @@ using DataFrames
     df = create_person_df()
 
     #display
-    fig = ParallelPlots.create_parallel_coordinates_plot(df)
+    fig = parallelplot(df)
 
     @test fig !== nothing
 
     save("parallel_coordinates_plot.png", fig)
-    display(fig)
 
 end

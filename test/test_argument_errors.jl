@@ -13,16 +13,16 @@ using DataFrames
         City=["Berlin"])
     # Test 1: Function throws ArgumentError for invalid input
     @test_throws ArgumentError begin
-        ParallelPlots.create_parallel_coordinates_plot(DataFrame(nothing))
+        parallelplot(DataFrame(nothing))
     end
 
     @test_throws ArgumentError begin
-        ParallelPlots.create_parallel_coordinates_plot(df_missing)
+        parallelplot(df_missing)
     end
     @test_throws ArgumentError begin
-        ParallelPlots.create_parallel_coordinates_plot(df_one_column)
+        parallelplot(df_one_column)
     end
     @test_throws ArgumentError begin
-        ParallelPlots.create_parallel_coordinates_plot(df_one_line)
+        parallelplot(df_one_line)
     end
-end 
+end
