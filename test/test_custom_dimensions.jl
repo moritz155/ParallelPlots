@@ -1,6 +1,5 @@
 include("test_utils.jl")
 using ParallelPlots
-using CairoMakie
 using Test
 
 @testset "call with scene width & height" begin
