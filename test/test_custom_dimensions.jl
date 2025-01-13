@@ -1,5 +1,6 @@
 include("test_utils.jl")
 using ParallelPlots
+using CairoMakie
 using Test
 
 @testset "call with scene width & height" begin
@@ -8,7 +9,7 @@ using Test
     df = create_person_df()
 
     #display
-    fig = parallelplot(df, scene_width = 300, scene_height = 300)
+    fig = parallelplot(df, figure = (resolution = (300, 300),))
 
     @test fig !== nothing
 

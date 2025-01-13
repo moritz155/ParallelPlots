@@ -32,16 +32,23 @@ You need to use the package (1-3) and install the dependencies (4-5)
 5. `Import ParallelPlots` to download Dependencies and use the Package from Command Line
 
 ### Usage
-# TODO: REWRITE
 ```@example
-julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=60:80,age=20:40))
-
+julia> using ParallelPlots
+julia> parallelplot(DataFrame(height=160:180,weight=60:80,age=20:40))
+```
+```
 # If you want to normalize the Data, you can add the value normalized=true, default is false
-julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
-
+julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
+```
+```
 # If you want to set the size of the plot (default width:800, height:600)
-julia> ParallelPlots.create_parallel_coordinates_plot( DataFrame(height=160:180,weight=60:80,age=20:40), scene_width=200, scene_height=200 )
+julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = (resolution = (300, 300),) )
+```
+```
+# You can update as well the Graph with Observables
 
+julia> df_observable = Observable(DataFrame(height=160:180,weight=60:80,age=20:40))
+julia> fig, ax, sc = parallelplot(df_observable)
 ```
 
 Please read the [Docs](/docs/build/index.html) for further Information

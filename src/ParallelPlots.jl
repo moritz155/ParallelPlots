@@ -32,63 +32,57 @@ end
 
 
 
-#### TODO: DELETE THE COMMENT and rewrite it for the new function
 """
-    create_parallel_coordinates_plot(data::DataFrame, normalize::Bool)
-
 - Julia version: 1.10.5
 
 # Constructors
 ```julia
-ParallelPlots.create_parallel_coordinates_plot(data::DataFrame; normalize::Bool=false, scene_width::Integer=800, scene_height::Integer=600)
+ParallelPlot(data::DataFrame; normalize::Bool=false, scene_width::Integer=800, scene_height::Integer=600)
 ```
 
 # Arguments
 
 - `data::DataFrame`:
 - `normalize::Bool`:
+- `scene_width::Integer`:
+- `scene_height::Integer`:
 
 # Examples
 ```@example
-julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=60:80,age=20:40))
+julia> using ParallelPlots
+julia> parallelplot(DataFrame(height=160:180,weight=60:80,age=20:40))
 
 # If you want to normalize the Data, you can add the value normalized=true, default is false
-julia> ParallelPlots.create_parallel_coordinates_plot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
+julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
 
-# If you want to set the size of the plot (default width:800, height:600)
-julia> ParallelPlots.create_parallel_coordinates_plot( DataFrame(height=160:180,weight=60:80,age=20:40), scene_width=200, scene_height=200 )
+# If you want to set the size of the plot
+julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = (resolution = (300, 300),) )
 
+# You can update as well the Graph with Observables
+
+julia> df_observable = Observable(DataFrame(height=160:180,weight=60:80,age=20:40))
+julia> fig, ax, sc = parallelplot(df_observable)
 ```
 
-
 """
-
-
-
-
-# TODO WRITE COMMENT ON HOW TO USE?
 @recipe(ParallelPlot, df) do scene
     Attributes(
     # size, normalize attributes
-        normalize = false,
-        scene_width = 800,
-        scene_height = 600,
+        normalize = false
     )
 end
 
-# This Function will completly renew the Plot
-# If we want to change only axis --> the axis must be send individually to this function!
+
 function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 
     # our first parameter is the DataFrame-Observable
     df_observable  = pp[1]
 
-
     # this helper function will update our observables
     # whenever df_observable change
     function update_plot(data)
 
-    # check the given DataFrame
+        # check the given DataFrame
         input_check(data)
 
         # Normalize the data if required
@@ -103,9 +97,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
         limits = [(minimum(col), maximum(col)) for col in parsed_data]
 
         let
-            # creates the Scene for the Plot
-            #scene = Scene(resolution = (pp.scene_width[], pp.scene_height[]), camera=campixel!)
-
+            # get the scene
             fig = current_figure()
             scene = fig.scene
 
@@ -115,14 +107,18 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
             empty!(fig.content)
             fig.current_axis[] = nothing
 
+            # get the widht and height
+            scene_width,scene_height = size(scene)
+
+
 
             numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
             sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
             # Plot dimensions
-            width = pp.scene_width[] * 0.75  # 75% of scene width
-            height = pp.scene_height[] * 0.75  # 75% of scene width
-            offset = min(pp.scene_width[], pp.scene_height[]) * 0.15  # 15% of scene dimensions
+            width = scene_width[] * 0.75  # 75% of scene width
+            height = scene_height[] * 0.75  # 75% of scene width
+            offset = min(scene_width[], scene_height[]) * 0.15  # 15% of scene dimensions
 
             # Create axes
             for i in 1:numberFeatures
