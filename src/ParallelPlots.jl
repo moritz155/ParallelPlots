@@ -37,15 +37,13 @@ end
 
 # Constructors
 ```julia
-ParallelPlot(data::DataFrame; normalize::Bool=false, scene_width::Integer=800, scene_height::Integer=600)
+ParallelPlot(data::DataFrame; normalize::Bool=false)
 ```
 
 # Arguments
 
 - `data::DataFrame`:
 - `normalize::Bool`:
-- `scene_width::Integer`:
-- `scene_height::Integer`:
 
 # Examples
 ```@example
