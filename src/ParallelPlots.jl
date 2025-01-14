@@ -76,12 +76,13 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
     # our first parameter is the DataFrame-Observable
     df_observable  = pp[1]
 
+
     # this helper function will update our observables
     # whenever df_observable change
     function update_plot(data)
 
         # check the given DataFrame
-        input_check(data)
+        input_check(data) # TODO: throw Error when new Data is invalid
 
         # Normalize the data if required
         if pp.normalize[] # TODO: what happens when the parameter is an observeable to? will it update?
@@ -94,63 +95,75 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
         # Compute limits for each column
         limits = [(minimum(col), maximum(col)) for col in parsed_data]
 
-        let
-            # get the scene
-            fig = current_figure()
-            scene = fig.scene
+        # Get the Fig and empty it, so its nice and clean for the next itaration
+        fig = current_figure()
+        empty!(fig)
+        scene = fig.scene
 
-            # reset scene
-            empty!(fig.scene)
-            trim!(fig.layout)
-            empty!(fig.content)
-            fig.current_axis[] = nothing
+        scene_width,scene_height = size(scene)
 
-            # get the widht and height
-            scene_width,scene_height = size(scene)
+        numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
+        sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
+
+        # Plot dimensions
+        width = scene_width[] * 0.75  # 75% of scene width
+        height = scene_height[] * 0.75  # 75% of scene width
+        offset = min(scene_width[], scene_height[]) * 0.15  # 15% of scene dimensions
+
+        # Create Overlaying, invisible Axis
+        # in here, all the lines will be stored
+        ax = Axis(fig[1,1], title = "ParallelPlot") # TODO: make the Title adjustable
+
+        # make the Axis invisible
+        hidespines!(ax)
+        hidedecorations!(ax)
+
+        # Create the new Parallel Axis
+        for i in 1:numberFeatures
+            # x will be used to split the Scene for each feature
+            x = (i - 1) / (numberFeatures - 1) * width
+
+            # get default
+            def = Makie.default_attribute_values(Axis, nothing)
+
+            # Create the Parallel Line Axis
+            Makie.LineAxis(
+                scene,
+                limits=limits[i],
+                dim_convert = Makie.NoDimConversion(),
+                endpoints=Point2f[(offset + x, offset), (offset + x, offset + height)],
+                tickformat = Makie.automatic,
+
+                spinecolor = :black,
+                spinevisible = true,
+                labelfont = def[:ylabelfont],
+                labelrotation = def[:ylabelrotation],
+                labelvisible = false,
+                ticklabelfont = def[:yticklabelfont],
+                ticklabelsize = def[:yticklabelsize],
+                ticklabelalign = (:right, :center),
+                minorticks = def[:yminorticks],
+            )
+
+        end
+
+        # Draw lines connecting points for each row
+        for i in 1:sampleSize
+            dataPoints = [
+               # calcuating the point respectivly of the width and height in the Screen
+               Point2f(
+                    # calculates which feature the Point should be on
+                    offset + (j - 1) / (numberFeatures - 1) * width,
+                    # calculates the Y axis value
+                    (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
+               )
+               # iterates through the Features and creates for each feature the samplePoint (above)
+               for j in 1:numberFeatures
+            ]
+            lines!(scene, dataPoints, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)))
 
 
 
-            numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
-            sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
-
-            # Plot dimensions
-            width = scene_width[] * 0.75  # 75% of scene width
-            height = scene_height[] * 0.75  # 75% of scene width
-            offset = min(scene_width[], scene_height[]) * 0.15  # 15% of scene dimensions
-
-            # Create axes
-            for i in 1:numberFeatures
-                # x will be used to split the Scene for each feature
-                x = (i - 1) / (numberFeatures - 1) * width
-                # LineAxis will create one Axis Vertical, for each Feature one Axis
-                MakieLayout.LineAxis(scene, limits=limits[i],
-                    spinecolor=:black, labelfont="Arial",
-                    ticklabelfont="Arial", spinevisible=true,
-                    minorticks=IntervalsBetween(2),
-                    # the lowest and highest point to maximize the Axis from Bottom to Top
-                    endpoints=Point2f0[(offset + x, offset), (offset + x, offset + height)],
-                    ticklabelalign=(:right, :center), labelvisible=true,
-                    # using the names of the dataframe for display the axis
-                    label=names(data)[i])
-            end
-
-            # Draw lines connecting points for each row
-            for i in 1:sampleSize
-                dataPoints = [
-                    # calcuating the point respectivly of the width and height in the Screen
-                    Point2f0(
-                        # calculates which feature the Point should be on
-                        offset + (j - 1) / (numberFeatures - 1) * width,
-                        # calculates the Y axis value
-                        (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
-                    )
-                    # iterates through the Features and creates for each feature the samplePoint (above)
-                    for j in 1:numberFeatures
-                ]
-                lines!(scene, dataPoints, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)),
-                    show_axis=false)
-            end
-            return scene
         end
 
     end
@@ -161,9 +174,6 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
     # then call it once manually with the first dataFrame
     # contents so we prepopulate all observables with correct values
     update_plot(df_observable[])
-
-    # some Random Plot, else we get an error
-    lines!(pp, 1:9, iseven.(1:9) .- 0; color = :tomato)
 
     # lastly we return the new ParallelPlot
     pp
