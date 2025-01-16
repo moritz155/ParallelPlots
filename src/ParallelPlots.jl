@@ -121,7 +121,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
             # Create axes
             for i in 1:numberFeatures
                 # x will be used to split the Scene for each feature
-                x = (i - 1) / (numberFeatures - 1) * width
+                x = numberFeatures==1 ? width/2 : (i - 1) / (numberFeatures - 1) * width
                 # LineAxis will create one Axis Vertical, for each Feature one Axis
                 MakieLayout.LineAxis(scene, limits=limits[i],
                     spinecolor=:black, labelfont="Arial",
@@ -147,7 +147,8 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
                     # iterates through the Features and creates for each feature the samplePoint (above)
                     for j in 1:numberFeatures
                 ]
-                lines!(scene, dataPoints, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)),
+                color_value = sampleSize == 1 ? 0.5 : (i-1) / (sampleSize - 1)
+                lines!(scene, dataPoints, color=get(Makie.ColorSchemes.inferno, color_value),
                     show_axis=false)
             end
             return scene
