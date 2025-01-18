@@ -3,6 +3,20 @@ module ParallelPlots
 using CairoMakie
 using DataFrames
 
+"""
+    normalize_DF(data::DataFrame) -> DataFrame
+
+Applies Min-Max scaling to all columns in the provided `DataFrame`. 
+Each value is transformed to the range [0, 1] using the formula:
+
+    x' = (x - min) / (max - min)
+
+# Arguments
+- `data::DataFrame`: Input DataFrame to be normalized.
+
+# Returns
+- A `DataFrame` with all columns normalized.
+"""
 
 function normalize_DF(data::DataFrame)
     for col in names(data)
@@ -42,8 +56,14 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 
 # Arguments
 
-- `data::DataFrame`:
-- `normalize::Bool`:
+- `data::DataFrame`: Input dataset. Must have at least two columns and no missing values.
+- `normalize::Bool`: If `true`, data is normalized using Min-Max scaling. Default is `false`.
+- `scene_width::Integer` : Width of the plot in pixels. Default is `800`.
+- `scene_height::Integer` :  Height of the plot in pixels. Default is `600`.
+
+# Returns
+
+- A `Scene`  object representing the rendered plot.
 
 # Examples
 ```@example
