@@ -7,7 +7,7 @@ using DataFrames
 function normalize_DF(data::DataFrame)
     for col in names(data)
         data[!, col] = (data[!, col] .- minimum(data[!, col])) ./
-                                  (maximum(data[!, col]) - minimum(data[!, col]))
+                       (maximum(data[!, col]) - minimum(data[!, col]))
     end
 
     return data
@@ -65,8 +65,8 @@ julia> fig, ax, sc = parallelplot(df_observable)
 """
 @recipe(ParallelPlot, df) do scene
     Attributes(
-    # size, normalize attributes
-        normalize = false
+        # size, normalize attributes
+        normalize=false
     )
 end
 
@@ -74,7 +74,7 @@ end
 function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 
     # our first parameter is the DataFrame-Observable
-    df_observable  = pp[1]
+    df_observable = pp[1]
 
 
     # this helper function will update our observables
@@ -100,7 +100,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
         empty!(fig)
         scene = fig.scene
 
-        scene_width,scene_height = size(scene)
+        scene_width, scene_height = size(scene)
 
         numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
         sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
@@ -112,7 +112,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 
         # Create Overlaying, invisible Axis
         # in here, all the lines will be stored
-        ax = Axis(fig[1,1], title = "ParallelPlot") # TODO: make the Title adjustable
+        ax = Axis(fig[1, 1], title="ParallelPlot") # TODO: make the Title adjustable
 
         # make the Axis invisible
         hidespines!(ax)
@@ -133,15 +133,14 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
                 dim_convert = Makie.NoDimConversion(),
                 endpoints=Point2f[(offset + x, offset), (offset + x, offset + height)],
                 tickformat = Makie.automatic,
-
                 spinecolor = :black,
                 spinevisible = true,
                 labelfont = def[:ylabelfont],
-                labelrotation = def[:ylabelrotation],
-                labelvisible = false,
+                labelrotation = Float32(2pi),  
+                labelvisible = true,
+                label = string(names(data)[i]),
                 ticklabelfont = def[:yticklabelfont],
                 ticklabelsize = def[:yticklabelsize],
-                ticklabelalign = (:right, :center),
                 minorticks = def[:yminorticks],
             )
 
@@ -150,15 +149,15 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
         # Draw lines connecting points for each row
         for i in 1:sampleSize
             dataPoints = [
-               # calcuating the point respectivly of the width and height in the Screen
-               Point2f(
+                # calcuating the point respectivly of the width and height in the Screen
+                Point2f(
                     # calculates which feature the Point should be on
                     offset + (j - 1) / (numberFeatures - 1) * width,
                     # calculates the Y axis value
                     (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
-               )
-               # iterates through the Features and creates for each feature the samplePoint (above)
-               for j in 1:numberFeatures
+                )
+                # iterates through the Features and creates for each feature the samplePoint (above)
+                for j in 1:numberFeatures
             ]
             lines!(scene, dataPoints, color=get(Makie.ColorSchemes.inferno, (i - 1) / (sampleSize - 1)))
 
