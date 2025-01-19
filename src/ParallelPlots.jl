@@ -44,6 +44,8 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 
 - `data::DataFrame`:
 - `normalize::Bool`:
+- `custom_colors::[String]`:
+- `title::String`:
 
 # Examples
 ```@example
@@ -60,6 +62,12 @@ julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = 
 
 julia> df_observable = Observable(DataFrame(height=160:180,weight=60:80,age=20:40))
 julia> fig, ax, sc = parallelplot(df_observable)
+
+# If you want to add a Title for the Figure, sure you can!
+julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),title="My Title")
+
+# If you want to specify the axis labels, make sure to use the same number of labels as you have axis!
+julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), ax_label=["Height","Weight","Age"])
 ```
 
 """
@@ -70,6 +78,8 @@ julia> fig, ax, sc = parallelplot(df_observable)
 		custom_colors = [:red, :yellow, :green, :purple, :black, :pink],
 		colormap = :viridis,  # options: viridis,magma,plasma,inferno,cividis,mako,rocket,turbo
 		color_feature = 1,    # Which feature to use for coloring (column index)
+		title = "", # Title of the Figure
+		ax_label = nothing,
 	)
 end
 
@@ -103,6 +113,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		empty!(fig)
 		scene = fig.scene
 
+		# get the parent scene dimensions
 		scene_width, scene_height = size(scene)
 
 		numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
@@ -115,7 +126,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 
 		# Create Overlaying, invisible Axis
 		# in here, all the lines will be stored
-		ax = Axis(fig[1, 1], title = "ParallelPlot") # TODO: make the Title adjustable
+		ax = Axis(fig[1, 1], title = pp.title)
 
 		# make the Axis invisible
 		hidespines!(ax)

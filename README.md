@@ -50,6 +50,14 @@ julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = 
 julia> df_observable = Observable(DataFrame(height=160:180,weight=60:80,age=20:40))
 julia> fig, ax, sc = parallelplot(df_observable)
 ```
+```
+# If you want to add a Title for the Figure, sure you can!
+julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),title="My Title")
+```
+```
+# If you want to specify the axis labels, make sure to use the same number of labels as you have axis!
+julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), ax_label=["Height","Weight","Age"])
+```
 
 Please read the [Docs](/docs/build/index.html) for further Information
 
