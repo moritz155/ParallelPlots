@@ -139,7 +139,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 				spinecolor = :black,
 				spinevisible = true,
 				labelfont = def[:ylabelfont],
-				labelrotation = Float32(2pi),
+				labelrotation = π/2,
 				labelvisible = true,
 				label = string(names(data)[i]),
 				ticklabelfont = def[:yticklabelfont],
