@@ -76,5 +76,8 @@ Please read the [Docs](/docs/build/index.html) for further Information
 * move to `./docs` folder with command line
 * run `julia --project make.jl`
 
+## Plotting Backend
+This package depends heavily on the `CairoMakie` backend from the Makie.jl ecosystem for rendering plots. CairoMakie provides high-quality vector graphics, making it an excellent choice for creating publication-ready visualizations. While adapting this package to work with other plotting backends like `Plots.jl` is outside the scope of this project, advanced users may explore modifications for other backends if desired.
 
+Ensure CairoMakie is properly installed and activated when using this package.
 
