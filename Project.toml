@@ -1,13 +1,13 @@
 name = "ParallelPlots"
 uuid = "79f8b2c9-78a2-4289-b087-49f7cf65a4c9"
 authors = ["Moritz Schelten <moritz155@win.tu-berlin.de>", "Leon Haufe <leon.haufe@campus.tu-berlin.de>"]
-version = "2.0.0-DEV"
+version = "2.0.1-DEV"
 
 [deps]
-AbstractPlotting = "537997a7-5e4e-5d89-9595-2241ea00577e"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 
 [compat]
 julia = "1.10"
-#CairoMakie = "0.12.18"
+CairoMakie = "0.12.18"
+DataFrames = "1.7.0"

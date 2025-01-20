@@ -8,7 +8,7 @@ using Test
     df = create_person_df()
 
     #display
-    fig = parallelplot(df, figure = (resolution = (300, 300),))
+    fig = parallelplot(df, figure = (size = (300, 300),))
 
     @test fig !== nothing
 

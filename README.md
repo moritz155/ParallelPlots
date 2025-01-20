@@ -32,7 +32,20 @@ You need to use the package (1-3) and install the dependencies (4-5)
 5. `Import ParallelPlots` to download Dependencies and use the Package from Command Line
 
 ### Usage
-```@example
+#### Available Parameter
+
+| Parameter                                                          | Default                                         | Description                                                                      |
+|--------------------------------------------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------|
+| normalize::Bool                                                    | false                                           |                                                                                  |
+| custom_colors::[Strings]                                           | [:red, :yellow, :green, :purple, :black, :pink] |                                                                                  |
+| colormap::[viridis,magma,plasma,inferno,cividis,mako,rocket,turbo] | :viridis                                        |                                                                                  |
+| color_feature::Number                                              | 1                                               |                                                                                  |
+| title::String                                                      | ""                                              | The Title of The Figure                                                          |
+| ax_label ::[String]                                                | nothing                                         | Add your own Axis labels, just use the exact amount of labes as you have axis ;) |
+
+
+#### Examples
+```
 julia> using ParallelPlots
 julia> parallelplot(DataFrame(height=160:180,weight=60:80,age=20:40))
 ```
@@ -46,9 +59,16 @@ julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = 
 ```
 ```
 # You can update as well the Graph with Observables
-
 julia> df_observable = Observable(DataFrame(height=160:180,weight=60:80,age=20:40))
 julia> fig, ax, sc = parallelplot(df_observable)
+```
+```
+# If you want to add a Title for the Figure, sure you can!
+julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),title="My Title")
+```
+```
+# If you want to specify the axis labels, make sure to use the same number of labels as you have axis!
+julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), ax_label=["Height","Weight","Age"])
 ```
 
 Please read the [Docs](/docs/build/index.html) for further Information
