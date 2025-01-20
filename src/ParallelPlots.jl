@@ -31,6 +31,7 @@ function input_data_check(data::DataFrame)
 end
 
 
+
 """
 - Julia version: 1.10.5
 
@@ -144,10 +145,14 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		# Draw lines connecting points for each row
 		for i in 1:sampleSize
 			dataPoints = [
+                # calcuating the point respectivly of the width and height in the Screen
 				Point2f(
+                    # calculates which feature the Point should be on
 					offset + (j - 1) / (numberFeatures - 1) * width,
+                    # calculates the Y axis value
 					(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset,
 				)
+                # iterates through the Features and creates for each feature the samplePoint (above)
 				for j in 1:numberFeatures
 			]
 			color_idx = if length(pp.custom_colors[]) < i  # in case too little custom colors are given, use the first color
@@ -182,23 +187,26 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		# Create the new Parallel Axis
 		for i in 1:numberFeatures
 			# x will be used to split the Scene for each feature
-			x = (i - 1) / (numberFeatures - 1) * width
+			x = numberFeatures==1 ? width/2 : (i - 1) / (numberFeatures - 1) * width
 
 			# get default
 			def = Makie.default_attribute_values(Axis, nothing)
 
-			# Create the Parallel Line Axis
+			# LineAxis will create one Axis Vertical, for each Feature one Axis
 			Makie.LineAxis(
 				scene,
 				limits = limits[i],
 				dim_convert = Makie.NoDimConversion(),
+                # the lowest and highest point to maximize the Axis from Bottom to Top
 				endpoints = Point2f[(offset + x, offset), (offset + x, offset + height)],
 				tickformat = Makie.automatic,
 				spinecolor = :black,
 				spinevisible = true,
 				labelfont = def[:ylabelfont],
+                # rotate the label
 				labelrotation = π/2,
 				labelvisible = true,
+                # use either the dataFrame Name or the user-set labels
 				label = string(label[i]),
 				ticklabelfont = def[:yticklabelfont],
 				ticklabelsize = def[:yticklabelsize],
@@ -207,7 +215,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		end
 
 
-	end
+    end
 
 	# connect `update_plot` so that it is called whenever the DataFrame changes
 	Makie.Observables.onany(update_plot, df_observable)
