@@ -14,7 +14,7 @@ function normalize_DF(data::DataFrame)
 end
 
 
-function input_check(data::DataFrame)
+function input_data_check(data::DataFrame)
 	if data === nothing
 		throw(ArgumentError("Data cannot be nothing"))
 	end
@@ -31,7 +31,6 @@ function input_check(data::DataFrame)
 end
 
 
-
 """
 - Julia version: 1.10.5
 
@@ -46,6 +45,7 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 - `normalize::Bool`:
 - `custom_colors::[String]`:
 - `title::String`:
+- `ax_label::[String]`:
 
 # Examples
 ```@example
@@ -59,7 +59,6 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),no
 julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = (resolution = (300, 300),) )
 
 # You can update as well the Graph with Observables
-
 julia> df_observable = Observable(DataFrame(height=160:180,weight=60:80,age=20:40))
 julia> fig, ax, sc = parallelplot(df_observable)
 
@@ -73,7 +72,7 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), a
 """
 @recipe(ParallelPlot, df) do scene
 	Attributes(
-		# size, normalize attributes
+		# additional attributes
 		normalize = false,
 		custom_colors = [:red, :yellow, :green, :purple, :black, :pink],
 		colormap = :viridis,  # options: viridis,magma,plasma,inferno,cividis,mako,rocket,turbo
@@ -95,7 +94,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 	function update_plot(data)
 
 		# check the given DataFrame
-		input_check(data) # TODO: throw Error when new Data is invalid
+		input_data_check(data) # TODO: throw Error when new Data is invalid
 
 		# Normalize the data if required
 		if pp.normalize[] # TODO: what happens when the parameter is an observeable to? will it update?
@@ -132,6 +131,54 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		hidespines!(ax)
 		hidedecorations!(ax)
 
+		# # # # # # # # # #
+		# # # L I N E # # #
+		# # # # # # # # # #
+
+		# set the Color of the Line
+		color_col = pp.color_feature[]
+        color_values = parsed_data[color_col]  # Get all values for selected feature
+        color_min = minimum(color_values)
+        color_max = maximum(color_values)
+
+		# Draw lines connecting points for each row
+		for i in 1:sampleSize
+			dataPoints = [
+				Point2f(
+					offset + (j - 1) / (numberFeatures - 1) * width,
+					(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset,
+				)
+				for j in 1:numberFeatures
+			]
+			color_idx = if length(pp.custom_colors[]) < i  # in case too little custom colors are given, use the first color
+				1
+				@warn "too less Colors("*string(length(pp.custom_colors[]))*") are available for the Lines("*string(i)*"). You can set more with the 'custom_colors' attribute"
+			else
+				i
+			end
+            color_val = color_values[i]
+
+            lines!(scene, dataPoints,
+                color = color_val,
+                colormap = pp.colormap[],
+                colorrange = (color_min, color_max)
+            )
+			# lines!(scene, dataPoints, color = pp.custom_colors[][color_idx])
+		end
+
+		# # # # # # # # # #
+		# # # A X I S # # #
+		# # # # # # # # # #
+
+		# set the axis labels, if available
+		# check if ax_label has the same amount of labels as axis
+		label = if isnothing(pp.ax_label[])  # check if ax_label is set
+			names(data) # ax_label is not set, use the DB label
+		else
+			@assert length(pp.ax_label[]) === length(names(data)) "'ax_label' is set but has not the same amount of labels("*string(length(pp.ax_label[]))*") as axis("*string(length(names(data)))*")"
+			pp.ax_label[]
+		end
+
 		# Create the new Parallel Axis
 		for i in 1:numberFeatures
 			# x will be used to split the Scene for each feature
@@ -152,39 +199,13 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 				labelfont = def[:ylabelfont],
 				labelrotation = π/2,
 				labelvisible = true,
-				label = string(names(data)[i]),
+				label = string(label[i]),
 				ticklabelfont = def[:yticklabelfont],
 				ticklabelsize = def[:yticklabelsize],
 				minorticks = def[:yminorticks],
 			)
 		end
-        color_col = pp.color_feature[]
-        color_values = parsed_data[color_col]  # Get all values for selected feature
-        color_min = minimum(color_values)
-        color_max = maximum(color_values)
-		# Draw lines connecting points for each row
-		for i in 1:sampleSize
-			dataPoints = [
-				Point2f(
-					offset + (j - 1) / (numberFeatures - 1) * width,
-					(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset,
-				)
-				for j in 1:numberFeatures
-			]
-			color_idx = if length(pp.custom_colors[]) < i  # in case too little custom colors are given, use the first color 
-				1
-			else
-				i
-			end
-            color_val = color_values[i]
-    
-            lines!(scene, dataPoints, 
-                color = color_val, 
-                colormap = pp.colormap[],
-                colorrange = (color_min, color_max)
-            )
-			# lines!(scene, dataPoints, color = pp.custom_colors[][color_idx])
-		end
+
 
 	end
 
