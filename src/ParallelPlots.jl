@@ -3,7 +3,6 @@ module ParallelPlots
 using CairoMakie
 using DataFrames
 
-
 function normalize_DF(data::DataFrame)
     for col in names(data)
         data[!, col] = (data[!, col] .- minimum(data[!, col])) ./
@@ -13,7 +12,15 @@ function normalize_DF(data::DataFrame)
     return data
 end
 
+"""
+Check the validity of the input DataFrame for plotting.
 
+# Arguments
+- `data::DataFrame`: The DataFrame to check.
+
+# Throws
+- `ArgumentError`: If the DataFrame is invalid (e.g., `nothing`, too few columns/rows, or contains missing values).
+"""
 function input_check(data::DataFrame)
     if data === nothing
         throw(ArgumentError("Data cannot be nothing"))
@@ -44,6 +51,9 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 
 - `data::DataFrame`:
 - `normalize::Bool`:
+
+# Returns
+-`Scene` : a Makie object containing the rendered parallel coordinates plot
 
 # Examples
 ```@example
