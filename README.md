@@ -76,5 +76,12 @@ Please read the [Docs](/docs/build/index.html) for further Information
 * move to `./docs` folder with command line
 * run `julia --project make.jl`
 
+## About `Scene` in Makie.jl
 
+A `Scene` in Makie.jl is the primary container where visual elements are rendered. It organizes the coordinate system, layout, and graphical properties. When you create a parallel coordinates plot using this package, a `Scene` object is returned. This can be further customized or embedded into other layouts.
+
+### Return Types
+
+- `normalize_DF`: Returns a normalized `DataFrame` with all columns scaled to [0, 1].
+- `plot!`: Returns a `Scene` object containing the parallel coordinates plot.
 
