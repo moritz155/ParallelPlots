@@ -1,5 +1,7 @@
 using Random
 using DataFrames
+using CairoMakie
+
 
 #generate Data
 function create_person_df(n_samples = 10)
@@ -25,4 +27,17 @@ function create_car_df(n_samples = 10)
     )
 
     return df
+end
+#count line segments in a plot
+function count_line_segments(fig)
+    return length(filter(
+        x->(typeof(x)<:LineSegments),
+        fig.scene.plots))
+end
+
+#counts lines except black ones
+function count_lines(fig) 
+    return length(filter(
+        x-> typeof(x)<:Lines && !(x[:color][] == :black),
+        fig.scene.plots))
 end
