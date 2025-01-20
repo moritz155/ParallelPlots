@@ -31,6 +31,24 @@ You need to use the package (1-3) and install the dependencies (4-5)
 4. go back to `julia>` by pressing `CMD`+`C`
 5. `Import ParallelPlots` to download Dependencies and use the Package from Command Line
 
+### CairoMakie Dependency
+
+The `ParallelPlots` package uses the **CairoMakie** backend for creating visualizations. CairoMakie is a 2D rendering backend that allows for high quality, publication ready visualizations. 
+
+#### Why CairoMakie?
+- **High Quality**: Produces detailed visualizations suitable for presentations and publications.
+- **Export Options**: Supports output formats like PNG, SVG, and PDF.
+- **Performance**: Optimized for handling data efficiently during visualization.
+
+#### How to Install and Activate CairoMakie
+Make sure you have CairoMakie installed and activated before running `ParallelPlots`:
+1. Install CairoMakie:
+   ```julia
+   import Pkg
+   Pkg.add("CairoMakie")
+   using CairoMakie
+   CairoMakie.activate!(type = "svg")
+
 ### Usage
 ```@example
 julia> using ParallelPlots
