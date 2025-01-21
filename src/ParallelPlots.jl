@@ -157,7 +157,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 			]
 			color_idx = if length(pp.custom_colors[]) < i  # in case too little custom colors are given, use the first color
 				1
-				@warn "too less Colors("*string(length(pp.custom_colors[]))*") are available for the Lines("*string(i)*"). You can set more with the 'custom_colors' attribute"
+				@warn "too little Colors("*string(length(pp.custom_colors[]))*") are available for the Lines("*string(i)*"). You can set more with the 'custom_colors' attribute"
 			else
 				i
 			end
