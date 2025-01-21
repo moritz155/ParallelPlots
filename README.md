@@ -96,5 +96,10 @@ Please read the [Docs](/docs/build/index.html) for further Information
 * move to `./docs` folder with command line
 * run `julia --project make.jl`
 
+### Using CairoMakie
 
+CairoMakie is a highest-quality and efficient 2D plotting backend for publications. It uses Cairo.jl to draw vector graphics to SVG,PNG and PDF
 
+#### Activate CairoMakie
+
+Activate the backend by using CairoMakie and calling CairoMakie.activate!(type = "png") or CairoMakie.activate!(type = "svg")
