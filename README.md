@@ -103,3 +103,9 @@ CairoMakie is a highest-quality and efficient 2D plotting backend for publicatio
 #### Activate CairoMakie
 
 Activate the backend by using CairoMakie and calling CairoMakie.activate!(type = "png") or CairoMakie.activate!(type = "svg")
+
+### Overview
+
+This module provides a way to visualize data using parallel coordinates plots. A parallel coordinates plot is a common way of visualizing multivariate data by drawing lines connecting data points across parallel axes.
+
+The key output is a **Scene**, which is a CairoMakie object that holds the graphical rendering of your plot. The `Scene` serves as the container for all visual components, including axes and plotted lines.
