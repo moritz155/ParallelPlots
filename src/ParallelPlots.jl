@@ -54,7 +54,12 @@ to render parallel coordinate lines and custom axis layouts.
 
 
 # Returns
-- `Scene`: A visual representation of the parallel coordinates plot.
+-`pp`: ParallelPlot with Three values:
+	*`Figure`: provides a structure for layouts, subplots, and decorations.  
+	*`Axis`: The axis elements representing the parallel dimensions of the plot.
+	*`Scene`: is the root container for graphical objects in CairoMakie.
+	
+
 
 # Examples
 ```@example
