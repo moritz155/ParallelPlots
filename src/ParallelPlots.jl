@@ -39,6 +39,10 @@ end
 ```julia
 ParallelPlot(data::DataFrame; normalize::Bool=false)
 ```
+A `Scene` in CairoMakie is a container for rendering graphical elements.
+It serves as the root structure that holds various plot objects, 
+axes, and decorations. In the context of this module, the scene is used 
+to render parallel coordinate lines and custom axis layouts.
 
 # Arguments
 
@@ -47,6 +51,10 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 - `custom_colors::[String]`:
 - `title::String`:
 - `ax_label::[String]`:
+
+
+# Returns
+- `Scene`: A visual representation of the parallel coordinates plot.
 
 # Examples
 ```@example
