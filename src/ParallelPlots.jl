@@ -193,7 +193,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 			def = Makie.default_attribute_values(Axis, nothing)
 
 			# LineAxis will create one Axis Vertical, for each Feature one Axis
-			Makie.LineAxis(
+			axis = Makie.LineAxis(
 				scene,
 				limits = limits[i],
 				dim_convert = Makie.NoDimConversion(),
@@ -203,14 +203,19 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 				spinecolor = :black,
 				spinevisible = true,
 				labelfont = def[:ylabelfont],
-                # rotate the label
-				labelrotation = π/2,
-				labelvisible = true,
-                # use either the dataFrame Name or the user-set labels
-				label = string(label[i]),
+				labelrotation = def[:ylabelrotation],
+				labelvisible = false,
 				ticklabelfont = def[:yticklabelfont],
 				ticklabelsize = def[:yticklabelsize],
 				minorticks = def[:yminorticks],
+			)
+
+			# Create Lable for the Axis
+			axis_title!(
+				scene,
+				axis.attributes.endpoints,
+				string(label[i]);
+				titlegap = def[:titlegap],
 			)
 		end
 
@@ -228,5 +233,32 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 	pp
 end
 
+function axis_title!(
+    topscene,
+    endpoints::Observable,
+    title::String;
+    titlegap = Observable(4.0f0),
+)
+	println(endpoints)
+    titlepos = lift(endpoints, titlegap) do a, titlegap
+        x = a[1][1]
+        y = a[2][2] + titlegap
+        Point2(x, y)
+    end
+
+    titlet = text!(
+        topscene,
+        title,
+        position = titlepos,
+        #visible =
+        #fontsize =
+        align = (:center, :bottom),
+        #font =
+        #color =
+        space = :data,
+        #show_axis=false,
+        inspectable = false,
+    )
+end
 
 end
