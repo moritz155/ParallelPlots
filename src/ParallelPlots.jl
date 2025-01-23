@@ -75,7 +75,7 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), a
 	Attributes(
 		# additional attributes
 		normalize = false,
-		custom_colors = [:red, :yellow, :green, :purple, :black, :pink],
+		custom_colors = [:red, :yellow, :green, :purple, :black, :pink, :brown, :orange, :cyan, :blue],
 		colormap = :viridis,  # options: viridis,magma,plasma,inferno,cividis,mako,rocket,turbo
 		color_feature = 1,    # Which feature to use for coloring (column index)
 		title = "", # Title of the Figure
