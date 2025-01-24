@@ -8,7 +8,7 @@ using Test
     df = create_person_df()
 
     # Create set with correct Axis Labels
-    fig = parallelplot(df, color_feature="weight")
+    fig = parallelplot(df, color_feature="weight", colormap=:thermal)
 
     # TODO: do not Test agains nothing ;)
     @test fig !== nothing

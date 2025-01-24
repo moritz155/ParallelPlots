@@ -47,7 +47,6 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 - `normalize::Bool`:
 - `color_feature::String || nothing`: select, which axis/feature should be used for the coloring (e.g. 'weight') (default: last)
 - `title::String`:
-- `ax_label::[String]`:
 - `curve::Bool`:
 
 # Examples
@@ -68,8 +67,7 @@ julia> fig, ax, sc = parallelplot(df_observable)
 # If you want to add a Title for the Figure, sure you can!
 julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),title="My Title")
 
-# If you want to specify the axis labels, make sure to use the same number of labels as you have axis!
-julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), ax_label=["Height","Weight","Age"])
+# Adjust Color and and feature
 ```
 
 """
@@ -77,11 +75,13 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), a
 	Attributes(
 		# additional attributes
 		normalize = false,
-		colormap = :viridis,  # options: viridis,magma,plasma,inferno,cividis,mako,rocket,turbo
-		color_feature = nothing,    # Which feature to use for coloring (column name)
 		title = "", # Title of the Figure
-		ax_label = nothing,
+		colormap = :viridis,  # https://docs.makie.org/dev/explanations/colors
+		color_feature = nothing,    # Which feature to use for coloring (column name)
+		feature_selection = nothing, # which features should be shown, default: nothing --> show all features
 		curve = false, # If Lines should be curved between the axis. Default false
+		# if colorlegend/ ColorBar should be shown. Default: when color_feature is not visible, true, else false
+		show_color_legend = true #TODO write above comment
 	)
 end
 
@@ -139,9 +139,23 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		height = scene_height[] * 0.75  # 75% of scene width
 		offset = min(scene_width[], scene_height[]) * 0.15  # 15% of scene dimensions
 
-		# TODO: get size and remove the size from scene width width / size
-		# Set label --> know which outside axis is used...
-		Colorbar(fig[1, 2], limits = (color_min, color_max), colormap = :viridis,flipaxis = false, height = height)
+		# set the Color Bar on the side
+		if pp.show_color_legend[]
+			# update the width, combined -> 75%
+			bar_width = scene_width[] * 0.05 #% of scene width
+			width = scene_width[] * 0.70 #% of scene width
+
+			Colorbar(
+				fig[1, 2],
+				limits = (color_min, color_max),
+				colormap = pp.colormap[],
+				#flipaxis = false,
+				height = height,
+				width = bar_width,
+				label = color_col
+			)
+		end
+
 
 		# Create Overlaying, invisible Axis
 		# in here, all the lines will be stored
@@ -209,14 +223,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		# # # A X I S # # #
 		# # # # # # # # # #
 
-		# set the axis labels, if available
-		# check if ax_label has the same amount of labels as axis
-		label = if isnothing(pp.ax_label[])  # check if ax_label is set
-			names(data) # ax_label is not set, use the DB label
-		else
-			@assert length(pp.ax_label[]) === length(names(data)) "'ax_label' is set but has not the same amount of labels("*string(length(pp.ax_label[]))*") as axis("*string(length(names(data)))*")"
-			pp.ax_label[]
-		end
+
 
 		# Create the new Parallel Axis
 		for i in 1:numberFeatures
@@ -248,7 +255,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 			axis_title!(
 				scene,
 				axis.attributes.endpoints,
-				string(label[i]);
+				string(names(data)[i]);
 				titlegap = def[:titlegap],
 			)
 		end
@@ -285,7 +292,7 @@ function axis_title!(
         position = titlepos,
         #visible =
         #fontsize =
-        align = (:center, :bottom),
+        align = (:center, :top),
         #font =
         #color =
         space = :data,
