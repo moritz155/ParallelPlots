@@ -162,43 +162,25 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 					]
 				else
 					# Interpolate
+					dataPoints = []
 
-					# Array of Number of Axis, [1,2,3,4,5]
-					# Due to the Interpolation, numbers between will be added (x-Values)
-					x_coordinates = range(1, numberFeatures, step = 0.05)
+					# iterates through the Features/Axis
+					# Start at 2, bc we check the precious axis/feature f
+					for j in 2:numberFeatures
+						last_x = offset + ((j-1) - 1) / (numberFeatures - 1) * width
+						current_x = offset + ((j) - 1) / (numberFeatures - 1) * width
 
-					# Array of the "Values" of the feature/axis, [22,55,...]
-					y_coordinates = [
-						(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
-						for j in 1:numberFeatures
-					]
+						last_y = (parsed_data[j-1][i] - limits[j-1][1]) / (limits[j-1][2] - limits[j-1][1]) * height + offset
+						current_y = (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
 
-					# Interpolation Function
-					itp = Interpolations.interpolate(
-						y_coordinates,
-						BSpline(Cubic(Interpolations.Line(OnGrid()))),
-					)
-
-					# Calculate for each x-Coordinate (Axis) a Y-Coordinate (Value)
-					# Overwrite the 'old' Value Array with the interpolated values
-					y_coordinates = itp.(x_coordinates)
-
-					# calculate from the Axis Number to the Coordinate in the Plot, adding offset etc.
-					x_coordinates = [
-						offset + (x_coordinates[j] - 1) / (numberFeatures - 1) * width
-						for j in 1:length(x_coordinates)
-					]
-
-					dataPoints = [
-						Point2f(
-							# calculates which feature the Point should be on
-							x_coordinates[j],
-							# calculates the Y axis value
-							y_coordinates[j],
-						)
-						# iterates through the Features/Axis and creates for each feature the samplePoint (above)
-						for j in 1:length(x_coordinates)
-					]
+						# interpolate points between the current and the last point
+						for x in range(last_x, current_x, step = ( (current_x-last_x) / 30 ) )
+							# calculate the interpolated Y Value
+							y = interpolate(last_x, current_x, last_y, current_y, x)
+							# create a new Point
+							push!(dataPoints, Point2f(x,y))
+						end
+					end
 
 				end
 
@@ -307,6 +289,21 @@ function axis_title!(
         #show_axis=false,
         inspectable = false,
     )
+end
+
+# Interpolates between the x and y point
+# Inputs a x value
+# Outputs a y value
+function interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)
+
+	# calculate the % of Pi related to x between two x points
+	x_pi = (x - last_x)/(current_x - last_x) * π
+
+	# calculate the % difference between both x Values
+	y_scale = 0.5-0.5*cos(x_pi) #between 0-1
+
+	return last_y + y_scale * (current_y - last_y)
+
 end
 
 end
