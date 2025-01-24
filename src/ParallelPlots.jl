@@ -2,6 +2,7 @@ module ParallelPlots
 
 using CairoMakie
 using DataFrames
+using Interpolations
 
 
 function normalize_DF(data::DataFrame)
@@ -47,6 +48,7 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 - `custom_colors::[String]`:
 - `title::String`:
 - `ax_label::[String]`:
+- `curve::Bool`:
 
 # Examples
 ```@example
@@ -80,6 +82,7 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), a
 		color_feature = 1,    # Which feature to use for coloring (column index)
 		title = "", # Title of the Figure
 		ax_label = nothing,
+		curve = false, # If Lines should be curved between the axis. Default false
 	)
 end
 
@@ -144,17 +147,62 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 
 		# Draw lines connecting points for each row
 		for i in 1:sampleSize
-			dataPoints = [
-                # calcuating the point respectivly of the width and height in the Screen
-				Point2f(
-                    # calculates which feature the Point should be on
-					offset + (j - 1) / (numberFeatures - 1) * width,
-                    # calculates the Y axis value
-					(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset,
-				)
-                # iterates through the Features and creates for each feature the samplePoint (above)
-				for j in 1:numberFeatures
-			]
+				# If Curved, Interpolate
+				if(pp.curve[] == false)
+    				# calcuating the point respectivly of the width and height in the Screen
+    				dataPoints = [
+						Point2f(
+							# calculates which feature the Point should be on
+							offset + (j - 1) / (numberFeatures - 1) * width,
+							# calculates the Y axis value
+							(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset,
+						)
+						# iterates through the Features/Axis and creates for each feature the samplePoint (above)
+						for j in 1:numberFeatures
+					]
+				else
+					# Interpolate
+
+					# Array of Number of Axis, [1,2,3,4,5]
+					# Due to the Interpolation, numbers between will be added (x-Values)
+					x_coordinates = range(1, numberFeatures, step = 0.05)
+
+					# Array of the "Values" of the feature/axis, [22,55,...]
+					y_coordinates = [
+						(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
+						for j in 1:numberFeatures
+					]
+
+					# Interpolation Function
+					itp = Interpolations.interpolate(
+						y_coordinates,
+						BSpline(Cubic(Interpolations.Line(OnGrid()))),
+					)
+
+					# Calculate for each x-Coordinate (Axis) a Y-Coordinate (Value)
+					# Overwrite the 'old' Value Array with the interpolated values
+					y_coordinates = itp.(x_coordinates)
+
+					# calculate from the Axis Number to the Coordinate in the Plot, adding offset etc.
+					x_coordinates = [
+						offset + (x_coordinates[j] - 1) / (numberFeatures - 1) * width
+						for j in 1:length(x_coordinates)
+					]
+
+					dataPoints = [
+						Point2f(
+							# calculates which feature the Point should be on
+							x_coordinates[j],
+							# calculates the Y axis value
+							y_coordinates[j],
+						)
+						# iterates through the Features/Axis and creates for each feature the samplePoint (above)
+						for j in 1:length(x_coordinates)
+					]
+
+				end
+
+			# Color
 			color_idx = if length(pp.custom_colors[]) < i  # in case too little custom colors are given, use the first color
 				1
 				@warn "too little Colors("*string(length(pp.custom_colors[]))*") are available for the Lines("*string(i)*"). You can set more with the 'custom_colors' attribute"
@@ -163,6 +211,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 			end
             color_val = color_values[i]
 
+			# Create the Line
             lines!(scene, dataPoints,
                 color = color_val,
                 colormap = pp.colormap[],
@@ -239,7 +288,6 @@ function axis_title!(
     title::String;
     titlegap = Observable(4.0f0),
 )
-	println(endpoints)
     titlepos = lift(endpoints, titlegap) do a, titlegap
         x = a[1][1]
         y = a[2][2] + titlegap
