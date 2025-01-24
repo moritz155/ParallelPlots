@@ -37,7 +37,7 @@ You need to use the package (1-3) and install the dependencies (4-5)
 | Parameter                                                          | Default                                         | Description                                                                      |
 |--------------------------------------------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------|
 | normalize::Bool                                                    | false                                           |                                                                                  |
-| custom_colors::[Strings]                                           | [:red, :yellow, :green, :purple, :black, :pink] |                                                                                  |
+| color_axis::[Strings]                                              | [:red, :yellow, :green, :purple, :black, :pink] |                                                                                  |
 | colormap::[viridis,magma,plasma,inferno,cividis,mako,rocket,turbo] | :viridis                                        |                                                                                  |
 | color_feature::Number                                              | 1                                               |                                                                                  |
 | title::String                                                      | ""                                              | The Title of The Figure                                                          |

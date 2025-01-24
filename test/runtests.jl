@@ -9,6 +9,7 @@ include("test_utils.jl")
 
 include("test_argument_errors.jl")
 include("test_curved.jl")
+include("test_call_with_color_feature.jl")
 include("test_call_with_normalize.jl")
 include("test_custom_dimensions.jl")
 include("test_call_with_ax_labels.jl")

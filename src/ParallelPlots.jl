@@ -45,7 +45,7 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 
 - `data::DataFrame`:
 - `normalize::Bool`:
-- `custom_colors::[String]`:
+- `color_feature::String || nothing`: select, which axis/feature should be used for the coloring (e.g. 'weight') (default: last)
 - `title::String`:
 - `ax_label::[String]`:
 - `curve::Bool`:
@@ -77,9 +77,8 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), a
 	Attributes(
 		# additional attributes
 		normalize = false,
-		custom_colors = [:red, :yellow, :green, :purple, :black, :pink, :brown, :orange, :cyan, :blue],
 		colormap = :viridis,  # options: viridis,magma,plasma,inferno,cividis,mako,rocket,turbo
-		color_feature = 1,    # Which feature to use for coloring (column index)
+		color_feature = nothing,    # Which feature to use for coloring (column name)
 		title = "", # Title of the Figure
 		ax_label = nothing,
 		curve = false, # If Lines should be curved between the axis. Default false
@@ -122,10 +121,27 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
 		sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
+		# set the Color of the Color Feature
+		color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
+			names(data)[end] # color_feature is not set, use last column
+			# TODO: if features are available, use the last feature
+		else
+			# check if name is available
+			@assert pp.color_feature[] in names(data) "Color Feature ("*pp.color_feature[]*") is not available in DataFrame ("*string(names(data))*")"
+			pp.color_feature[]
+		end
+        color_values = data[:,color_col]  # Get all values for selected feature
+        color_min = minimum(color_values)
+        color_max = maximum(color_values)
+
 		# Plot dimensions
 		width = scene_width[] * 0.75  # 75% of scene width
 		height = scene_height[] * 0.75  # 75% of scene width
 		offset = min(scene_width[], scene_height[]) * 0.15  # 15% of scene dimensions
+
+		# TODO: get size and remove the size from scene width width / size
+		# Set label --> know which outside axis is used...
+		Colorbar(fig[1, 2], limits = (color_min, color_max), colormap = :viridis,flipaxis = false, height = height)
 
 		# Create Overlaying, invisible Axis
 		# in here, all the lines will be stored
@@ -138,12 +154,6 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		# # # # # # # # # #
 		# # # L I N E # # #
 		# # # # # # # # # #
-
-		# set the Color of the Line
-		color_col = pp.color_feature[]
-        color_values = parsed_data[color_col]  # Get all values for selected feature
-        color_min = minimum(color_values)
-        color_max = maximum(color_values)
 
 		# Draw lines connecting points for each row
 		for i in 1:sampleSize
@@ -185,12 +195,6 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 				end
 
 			# Color
-			color_idx = if length(pp.custom_colors[]) < i  # in case too little custom colors are given, use the first color
-				1
-				@warn "too little Colors("*string(length(pp.custom_colors[]))*") are available for the Lines("*string(i)*"). You can set more with the 'custom_colors' attribute"
-			else
-				i
-			end
             color_val = color_values[i]
 
 			# Create the Line
@@ -199,7 +203,6 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
                 colormap = pp.colormap[],
                 colorrange = (color_min, color_max)
             )
-			# lines!(scene, dataPoints, color = pp.custom_colors[][color_idx])
 		end
 
 		# # # # # # # # # #
