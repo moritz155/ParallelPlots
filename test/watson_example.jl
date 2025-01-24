@@ -1,5 +1,6 @@
 using DrWatson
 using DataFrames
+using CairoMakie # for Record Video
 using ParallelPlots
 
 function projectile_simulation()
@@ -13,10 +14,16 @@ function projectile_simulation()
         total_distance=Float64[],
         time_of_flight=Float64[]
     )
-    for d in dicts
-        results = exec_simulation(d, results)
+    results = exec_simulation(dicts[1], results)
+    results_obs = Observable(results)
+    fig = parallelplot(results_obs, color_feature=5)
+    save("projectile_simulation_init.png", fig)
+
+    # Record for Debug purpose
+    record(fig, "projectile_simulation.mp4", 2:60, framerate=1) do t
+        results_obs[] = exec_simulation(dicts[t], results)
     end
-    return results
+    save("projectile_simulation_final.png", fig)
 end
 
 function prepare_simulation()
@@ -68,15 +75,4 @@ function exec_simulation(d::Dict, results)
     return results
 end
 
-# Main execution
-function main()
-    results = projectile_simulation()
-    println("Total parameter combinations: ", nrow(results))
-    println("\nSample results:")
-    display(first(results, 5))
-    fig = parallelplot(results, color_feature=5)
-    save("projectile_simulation.png", fig)
-end
-
-# Run the simulation
-main()
+projectile_simulation()
