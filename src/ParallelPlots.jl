@@ -30,6 +30,17 @@ function input_data_check(data::DataFrame)
 	end
 end
 
+function distinct_values_check(data::DataFrame)
+    print(data)
+	for col in names(data)
+        if length(unique(data[!, col])) ≤ 1
+            println("Column '$col' has only one distinct value. Adjusting the last row to ensure two distinct values.")
+            data[end, col] = data[end, col] + 1 # add 1 to last row
+        end
+    end
+    return data
+end
+
 
 
 """
@@ -96,7 +107,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 
 		# check the given DataFrame
 		input_data_check(data) # TODO: throw Error when new Data is invalid
-
+        data = distinct_values_check(data)
 		# Normalize the data if required
 		if pp.normalize[] # TODO: what happens when the parameter is an observeable to? will it update?
 			data = normalize_DF(data)
