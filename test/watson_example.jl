@@ -14,15 +14,19 @@ function projectile_simulation()
         total_distance=Float64[],
         time_of_flight=Float64[]
     )
-    results = exec_simulation(dicts[1], results)
-    results_obs = Observable(results)
-    fig = parallelplot(results_obs, color_feature=5)
-    save("projectile_simulation_init.png", fig)
+
+    # execute function for each results object
+    for i in 1:length(dicts)
+        results = exec_simulation(dicts[i], results)
+    end
+    #results_obs = Observable(results)
+    fig = parallelplot(results, color_feature=5)
+    #save("projectile_simulation_init.png", fig)
 
     # Record for Debug purpose
-    record(fig, "projectile_simulation.mp4", 2:60, framerate=1) do t
-        results_obs[] = exec_simulation(dicts[t], results)
-    end
+    #record(fig, "projectile_simulation.mp4", 4:40, framerate=1) do t
+    #    results_obs[] = exec_simulation(dicts[t], results)
+    #end
     save("projectile_simulation_final.png", fig)
 end
 
