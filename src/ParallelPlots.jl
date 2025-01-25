@@ -47,6 +47,7 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 - `normalize::Bool`:
 - `color_feature::String || nothing`: select, which axis/feature should be used for the coloring (e.g. 'weight') (default: last)
 - `title::String`:
+- `feature_labels::String`:
 - `curve::Bool`:
 
 # Examples
@@ -67,6 +68,9 @@ julia> fig, ax, sc = parallelplot(df_observable)
 # If you want to add a Title for the Figure, sure you can!
 julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),title="My Title")
 
+# If you want to specify the axis labels, make sure to use the same number of labels as you have axis!
+julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), feature_labels=["Height","Weight","Age"])
+
 # Adjust Color and and feature
 ```
 
@@ -78,6 +82,7 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),ti
 		title = "", # Title of the Figure
 		colormap = :viridis,  # https://docs.makie.org/dev/explanations/colors
 		color_feature = nothing,    # Which feature to use for coloring (column name)
+		feature_labels = nothing, # TODO
 		feature_selection = nothing, # which features should be shown, default: nothing --> show all features
 		curve = false, # If Lines should be curved between the axis. Default false
 		# if colorlegend/ ColorBar should be shown. Default: when color_feature is not visible, true, else false
@@ -118,6 +123,13 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		# get the parent scene dimensions
 		scene_width, scene_height = size(scene)
 
+		# Create Overlaying, invisible Axis
+		ax = Axis(fig[1, 1], title = pp.title)
+
+		# make the Axis invisible
+		hidespines!(ax)
+		hidedecorations!(ax)
+
 		numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
 		sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
@@ -134,36 +146,39 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
         color_min = minimum(color_values)
         color_max = maximum(color_values)
 
+		# set the axis labels, if available
+		# check if ax_label has the same amount of labels as axis
+		labels = if isnothing(pp.feature_labels[])  # check if ax_label is set
+			names(data) # ax_label is not set, use the DB label
+		else
+			@assert length(pp.feature_labels[]) === length(names(data)) "'feature_labels' is set but has not the same amount of labels("*string(length(pp.feature_labels[]))*") as axis("*string(length(names(data)))*")"
+			pp.feature_labels[]
+		end
+
 		# Plot dimensions
-		width = scene_width[] * 0.75  # 75% of scene width
-		height = scene_height[] * 0.75  # 75% of scene width
-		offset = min(scene_width[], scene_height[]) * 0.15  # 15% of scene dimensions
+		width = scene_width[] * 0.80  #% of scene width
+		height = scene_height[] * 0.80  #% of scene width
+		offset = min(scene_width[], scene_height[]) * 0.10  #% of scene dimensions
 
 		# set the Color Bar on the side
 		if pp.show_color_legend[]
 			# update the width, combined -> 75%
 			bar_width = scene_width[] * 0.05 #% of scene width
-			width = scene_width[] * 0.70 #% of scene width
+			width = scene_width[] * 0.75 #% of scene width
 
 			Colorbar(
 				fig[1, 2],
 				limits = (color_min, color_max),
 				colormap = pp.colormap[],
-				#flipaxis = false,
 				height = height,
 				width = bar_width,
+
 				label = color_col
 			)
 		end
 
 
-		# Create Overlaying, invisible Axis
-		# in here, all the lines will be stored
-		ax = Axis(fig[1, 1], title = pp.title)
 
-		# make the Axis invisible
-		hidespines!(ax)
-		hidedecorations!(ax)
 
 		# # # # # # # # # #
 		# # # L I N E # # #
@@ -255,7 +270,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 			axis_title!(
 				scene,
 				axis.attributes.endpoints,
-				string(names(data)[i]);
+				string(labels[i]);
 				titlegap = def[:titlegap],
 			)
 		end
@@ -292,7 +307,7 @@ function axis_title!(
         position = titlepos,
         #visible =
         #fontsize =
-        align = (:center, :top),
+        align = (:center, :bottom),
         #font =
         #color =
         space = :data,
