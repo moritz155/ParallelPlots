@@ -82,11 +82,11 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), f
 		title = "", # Title of the Figure
 		colormap = :viridis,  # https://docs.makie.org/dev/explanations/colors
 		color_feature = nothing,    # Which feature to use for coloring (column name)
-		feature_labels = nothing, # TODO
+		feature_labels = nothing, # the Label of each feature as List of Strings
 		feature_selection = nothing, # which features should be shown, default: nothing --> show all features
 		curve = false, # If Lines should be curved between the axis. Default false
 		# if colorlegend/ ColorBar should be shown. Default: when color_feature is not visible, true, else false
-		show_color_legend = true #TODO write above comment
+		show_color_legend = nothing
 	)
 end
 
@@ -102,18 +102,12 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 	function update_plot(data)
 
 		# check the given DataFrame
-		input_data_check(data) # TODO: throw Error when new Data is invalid
+		input_data_check(data)
 
 		# Normalize the data if required
-		if pp.normalize[] # TODO: what happens when the parameter is an observeable to? will it update?
+		if pp.normalize[]
 			data = normalize_DF(data)
 		end
-
-		# Parse the DataFrame into a list of arrays
-		parsed_data = [data[!, col] for col in names(data)]
-
-		# Compute limits for each column
-		limits = [(minimum(col), maximum(col)) for col in parsed_data]
 
 		# Get the Fig and empty it, so its nice and clean for the next itaration
 		fig = current_figure()
@@ -124,14 +118,20 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		scene_width, scene_height = size(scene)
 
 		# Create Overlaying, invisible Axis
-		ax = Axis(fig[1, 1], title = pp.title)
+		# set hight to fit Label
+		ax = Axis(fig[1, 1],
+			title = pp.title,
+			height=(scene_height-
+				(
+					2*Makie.default_attribute_values(Axis, nothing)[:titlegap]+
+					Makie.default_attribute_values(Axis, nothing)[:titlesize]
+				)
+			)
+		)
 
 		# make the Axis invisible
 		hidespines!(ax)
 		hidedecorations!(ax)
-
-		numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
-		sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
 		# set the Color of the Color Feature
 		color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
@@ -145,6 +145,16 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
         color_values = data[:,color_col]  # Get all values for selected feature
         color_min = minimum(color_values)
         color_max = maximum(color_values)
+
+		# Select the Columns, the user wants to show (feature_selection)
+		if !isnothing(pp.feature_selection[])
+			# check if all given selections are in the DF
+			for selection in pp.feature_selection[]
+				println(selection)
+				@assert selection in names(data) "Feature Selection ("*selection*") is not available in DataFrame ("*string(names(data))*")"
+			end
+			data = data[:, pp.feature_selection[]]
+		end
 
 		# set the axis labels, if available
 		# check if ax_label has the same amount of labels as axis
@@ -160,8 +170,22 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		height = scene_height[] * 0.80  #% of scene width
 		offset = min(scene_width[], scene_height[]) * 0.10  #% of scene dimensions
 
-		# set the Color Bar on the side
-		if pp.show_color_legend[]
+		# COLOR FEATURE
+		# If set, use the setted value
+		# Show, when color_feature is not in feature_selection
+		show_color_legend = if pp.show_color_legend[] == true
+			true
+		elseif pp.show_color_legend[] == false
+			false
+			# TODO: CHECK FOR DUPLICATE; REMOVE FIRST STAEMENT
+		elseif !isnothing(pp.feature_selection[]) && !(pp.color_feature[] in pp.feature_selection[])
+			true
+		else
+			false
+		end
+
+		# set the Color Bar on the side if it should be set
+		if show_color_legend[]
 			# update the width, combined -> 75%
 			bar_width = scene_width[] * 0.05 #% of scene width
 			width = scene_width[] * 0.75 #% of scene width
@@ -178,7 +202,14 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		end
 
 
+		# Parse the DataFrame into a list of arrays
+		parsed_data = [data[!, col] for col in names(data)]
 
+		# Compute limits for each column
+		limits = [(minimum(col), maximum(col)) for col in parsed_data]
+
+		numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
+		sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
 		# # # # # # # # # #
 		# # # L I N E # # #
