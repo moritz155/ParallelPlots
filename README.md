@@ -34,14 +34,16 @@ You need to use the package (1-3) and install the dependencies (4-5)
 ### Usage
 #### Available Parameter
 
-| Parameter                                                          | Default                                         | Description                                                                       |
-|--------------------------------------------------------------------|-------------------------------------------------|-----------------------------------------------------------------------------------|
-| normalize::Bool                                                    | false                                           |                                                                                   |
-| color_axis::[Strings]                                              | [:red, :yellow, :green, :purple, :black, :pink] |                                                                                   |
-| colormap::[viridis,magma,plasma,inferno,cividis,mako,rocket,turbo] | :viridis                                        |                                                                                   |
-| color_feature::Number                                              | 1                                               |                                                                                   |
-| title::String                                                      | ""                                              | The Title of The Figure                                                           |
-| feature_labels ::[String]                                          | nothing                                         | Add your own Axis labels, just use the exact amount of labes as you have axis ;   |
+| Parameter         | Default  | Example                            | Description                                                                                                            |
+|-------------------|----------|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| normalize::Bool   | false    | normalize=true                     | If the Data should be normalized (min/max)                                                                             |
+| title::String     | ""       | title="My Title"                   | The Title of The Figure,                                                                                               |
+| colormap          | :viridis | colormap=:thermal                  | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                              |
+| color_feature     | nothing  | color_feature="weight"             | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used |
+| feature_labels    | nothing  | feature_labels=["Weight","Age"]    | Add your own Axis labels, just use the exact amount of labes as you have axis                                          |
+| feature_selection | nothing  | feature_selection=["weight","age"] | Select, which features should be Displayed. If color_feature is not in this List, use the last one                     |
+| curve             | false    | curve=true                         | Show the Lines Curved                                                                                                  |
+| show_color_legend | nothing  | show_color_legend=true             | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automaticly                |
 
 
 #### Examples
@@ -69,6 +71,23 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),ti
 ```
 # If you want to specify the axis labels, make sure to use the same number of labels as you have axis!
 julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), feature_labels=["Height","Weight","Age"])
+```
+```
+# Adjust Color and and feature
+parallelplot(df,
+		# You choose which axis/feature should be in charge for the coloring
+        color_feature="weight",
+        # you can as well select, which Axis should be shown
+        feature_selection=["height","age","income"],
+        # and label them as you like
+        feature_labels=["Height","Age","Income"],
+        # you can change the ColorMap (https://docs.makie.org/dev/explanations/colors)
+        colormap=:thermal,
+        # ...and can choose to display the color legend.
+        # If this Attribute is not set,
+        # it will only show the ColorBar, when the color feature is not in the selected feature
+        show_color_legend = true
+    )
 ```
 
 Please read the [Docs](/docs/build/index.html) for further Information

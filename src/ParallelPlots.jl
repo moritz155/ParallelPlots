@@ -72,6 +72,20 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),ti
 julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), feature_labels=["Height","Weight","Age"])
 
 # Adjust Color and and feature
+parallelplot(df,
+		# You choose which axis/feature should be in charge for the coloring
+        color_feature="weight",
+        # you can as well select, which Axis should be shown
+        feature_selection=["height","age","income"],
+        # and label them as you like
+        feature_labels=["Height","Age","Income"],
+        # you can change the ColorMap (https://docs.makie.org/dev/explanations/colors)
+        colormap=:thermal,
+        # ...and can choose to display the color legend.
+        # If this Attribute is not set,
+        # it will only show the ColorBar, when the color feature is not in the selected feature
+        show_color_legend = true
+    )
 ```
 
 """
@@ -135,8 +149,16 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 
 		# set the Color of the Color Feature
 		color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
-			names(data)[end] # color_feature is not set, use last column
-			# TODO: if features are available, use the last feature
+			# Its not Set, use the last feature
+			# therefore we need to check if user selected features
+			if !isnothing(pp.feature_selection[])
+				# use the last seleted feature as color_col
+				@assert pp.feature_selection[][end] in names(data) "Feature Selection ("*pp.feature_selection[][end]*") is not available in DataFrame ("*string(names(data))*")"
+				pp.feature_selection[][end]
+			else
+				names(data)[end] # no columns selected, use the last one
+			end
+
 		else
 			# check if name is available
 			@assert pp.color_feature[] in names(data) "Color Feature ("*pp.color_feature[]*") is not available in DataFrame ("*string(names(data))*")"
@@ -177,7 +199,6 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 			true
 		elseif pp.show_color_legend[] == false
 			false
-			# TODO: CHECK FOR DUPLICATE; REMOVE FIRST STAEMENT
 		elseif !isnothing(pp.feature_selection[]) && !(pp.color_feature[] in pp.feature_selection[])
 			true
 		else

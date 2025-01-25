@@ -32,6 +32,13 @@ using Test
     save("parallel_coordinates_plot_color_weight_deselected_noColorBar.png", fig)
 
     fig = parallelplot(df,
+        feature_selection=["height","age","income"],
+        feature_labels=["Height","Age","Income"],
+        colormap=:thermal
+    )
+    save("parallel_coordinates_plot_color_no_selection.png", fig)
+
+    fig = parallelplot(df,
         color_feature="weight",
         colormap=:thermal,
         show_color_legend = true
