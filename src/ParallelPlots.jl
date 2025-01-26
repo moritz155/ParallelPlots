@@ -2,6 +2,7 @@ module ParallelPlots
 
 using CairoMakie
 using DataFrames
+using Interpolations
 
 
 function normalize_DF(data::DataFrame)
@@ -44,9 +45,10 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 
 - `data::DataFrame`:
 - `normalize::Bool`:
-- `custom_colors::[String]`:
+- `color_feature::String || nothing`: select, which axis/feature should be used for the coloring (e.g. 'weight') (default: last)
 - `title::String`:
-- `ax_label::[String]`:
+- `feature_labels::String`:
+- `curve::Bool`:
 
 # Examples
 ```@example
@@ -67,7 +69,23 @@ julia> fig, ax, sc = parallelplot(df_observable)
 julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),title="My Title")
 
 # If you want to specify the axis labels, make sure to use the same number of labels as you have axis!
-julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), ax_label=["Height","Weight","Age"])
+julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), feature_labels=["Height","Weight","Age"])
+
+# Adjust Color and and feature
+parallelplot(df,
+		# You choose which axis/feature should be in charge for the coloring
+        color_feature="weight",
+        # you can as well select, which Axis should be shown
+        feature_selection=["height","age","income"],
+        # and label them as you like
+        feature_labels=["Height","Age","Income"],
+        # you can change the ColorMap (https://docs.makie.org/dev/explanations/colors)
+        colormap=:thermal,
+        # ...and can choose to display the color legend.
+        # If this Attribute is not set,
+        # it will only show the ColorBar, when the color feature is not in the selected feature
+        show_color_legend = true
+    )
 ```
 
 """
@@ -75,11 +93,14 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), a
 	Attributes(
 		# additional attributes
 		normalize = false,
-		custom_colors = [:red, :yellow, :green, :purple, :black, :pink, :brown, :orange, :cyan, :blue],
-		colormap = :viridis,  # options: viridis,magma,plasma,inferno,cividis,mako,rocket,turbo
-		color_feature = 1,    # Which feature to use for coloring (column index)
 		title = "", # Title of the Figure
-		ax_label = nothing,
+		colormap = :viridis,  # https://docs.makie.org/dev/explanations/colors
+		color_feature = nothing,    # Which feature to use for coloring (column name)
+		feature_labels = nothing, # the Label of each feature as List of Strings
+		feature_selection = nothing, # which features should be shown, default: nothing --> show all features
+		curve = false, # If Lines should be curved between the axis. Default false
+		# if colorlegend/ ColorBar should be shown. Default: when color_feature is not visible, true, else false
+		show_color_legend = nothing
 	)
 end
 
@@ -95,18 +116,12 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 	function update_plot(data)
 
 		# check the given DataFrame
-		input_data_check(data) # TODO: throw Error when new Data is invalid
+		input_data_check(data)
 
 		# Normalize the data if required
-		if pp.normalize[] # TODO: what happens when the parameter is an observeable to? will it update?
+		if pp.normalize[]
 			data = normalize_DF(data)
 		end
-
-		# Parse the DataFrame into a list of arrays
-		parsed_data = [data[!, col] for col in names(data)]
-
-		# Compute limits for each column
-		limits = [(minimum(col), maximum(col)) for col in parsed_data]
 
 		# Get the Fig and empty it, so its nice and clean for the next itaration
 		fig = current_figure()
@@ -116,73 +131,166 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		# get the parent scene dimensions
 		scene_width, scene_height = size(scene)
 
-		numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
-		sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
-
-		# Plot dimensions
-		width = scene_width[] * 0.75  # 75% of scene width
-		height = scene_height[] * 0.75  # 75% of scene width
-		offset = min(scene_width[], scene_height[]) * 0.15  # 15% of scene dimensions
-
 		# Create Overlaying, invisible Axis
-		# in here, all the lines will be stored
-		ax = Axis(fig[1, 1], title = pp.title)
+		# set hight to fit Label
+		ax = Axis(fig[1, 1],
+			title = pp.title,
+			height=(scene_height-
+				(
+					2*Makie.default_attribute_values(Axis, nothing)[:titlegap]+
+					Makie.default_attribute_values(Axis, nothing)[:titlesize]
+				)
+			)
+		)
 
 		# make the Axis invisible
 		hidespines!(ax)
 		hidedecorations!(ax)
 
+		# set the Color of the Color Feature
+		color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
+			# Its not Set, use the last feature
+			# therefore we need to check if user selected features
+			if !isnothing(pp.feature_selection[])
+				# use the last seleted feature as color_col
+				@assert pp.feature_selection[][end] in names(data) "Feature Selection ("*pp.feature_selection[][end]*") is not available in DataFrame ("*string(names(data))*")"
+				pp.feature_selection[][end]
+			else
+				names(data)[end] # no columns selected, use the last one
+			end
+
+		else
+			# check if name is available
+			@assert pp.color_feature[] in names(data) "Color Feature ("*pp.color_feature[]*") is not available in DataFrame ("*string(names(data))*")"
+			pp.color_feature[]
+		end
+        color_values = data[:,color_col]  # Get all values for selected feature
+        color_min = minimum(color_values)
+        color_max = maximum(color_values)
+
+		# Select the Columns, the user wants to show (feature_selection)
+		if !isnothing(pp.feature_selection[])
+			# check if all given selections are in the DF
+			for selection in pp.feature_selection[]
+				println(selection)
+				@assert selection in names(data) "Feature Selection ("*selection*") is not available in DataFrame ("*string(names(data))*")"
+			end
+			data = data[:, pp.feature_selection[]]
+		end
+
+		# set the axis labels, if available
+		# check if ax_label has the same amount of labels as axis
+		labels = if isnothing(pp.feature_labels[])  # check if ax_label is set
+			names(data) # ax_label is not set, use the DB label
+		else
+			@assert length(pp.feature_labels[]) === length(names(data)) "'feature_labels' is set but has not the same amount of labels("*string(length(pp.feature_labels[]))*") as axis("*string(length(names(data)))*")"
+			pp.feature_labels[]
+		end
+
+		# Plot dimensions
+		width = scene_width[] * 0.80  #% of scene width
+		height = scene_height[] * 0.80  #% of scene width
+		offset = min(scene_width[], scene_height[]) * 0.10  #% of scene dimensions
+
+		# COLOR FEATURE
+		# If set, use the setted value
+		# Show, when color_feature is not in feature_selection
+		show_color_legend = if pp.show_color_legend[] == true
+			true
+		elseif pp.show_color_legend[] == false
+			false
+		elseif !isnothing(pp.feature_selection[]) && !(pp.color_feature[] in pp.feature_selection[])
+			true
+		else
+			false
+		end
+
+		# set the Color Bar on the side if it should be set
+		if show_color_legend[]
+			# update the width, combined -> 75%
+			bar_width = scene_width[] * 0.05 #% of scene width
+			width = scene_width[] * 0.75 #% of scene width
+
+			Colorbar(
+				fig[1, 2],
+				limits = (color_min, color_max),
+				colormap = pp.colormap[],
+				height = height,
+				width = bar_width,
+
+				label = color_col
+			)
+		end
+
+
+		# Parse the DataFrame into a list of arrays
+		parsed_data = [data[!, col] for col in names(data)]
+
+		# Compute limits for each column
+		limits = [(minimum(col), maximum(col)) for col in parsed_data]
+
+		numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
+		sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
+
 		# # # # # # # # # #
 		# # # L I N E # # #
 		# # # # # # # # # #
 
-		# set the Color of the Line
-		color_col = pp.color_feature[]
-        color_values = parsed_data[color_col]  # Get all values for selected feature
-        color_min = minimum(color_values)
-        color_max = maximum(color_values)
-
 		# Draw lines connecting points for each row
 		for i in 1:sampleSize
-			dataPoints = [
-                # calcuating the point respectivly of the width and height in the Screen
-				Point2f(
-                    # calculates which feature the Point should be on
-					offset + (j - 1) / (numberFeatures - 1) * width,
-                    # calculates the Y axis value
-					(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset,
-				)
-                # iterates through the Features and creates for each feature the samplePoint (above)
-				for j in 1:numberFeatures
-			]
-			color_idx = if length(pp.custom_colors[]) < i  # in case too little custom colors are given, use the first color
-				1
-				@warn "too little Colors("*string(length(pp.custom_colors[]))*") are available for the Lines("*string(i)*"). You can set more with the 'custom_colors' attribute"
-			else
-				i
-			end
+				# If Curved, Interpolate
+				if(pp.curve[] == false)
+    				# calcuating the point respectivly of the width and height in the Screen
+    				dataPoints = [
+						Point2f(
+							# calculates which feature the Point should be on
+							offset + (j - 1) / (numberFeatures - 1) * width,
+							# calculates the Y axis value
+							(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset,
+						)
+						# iterates through the Features/Axis and creates for each feature the samplePoint (above)
+						for j in 1:numberFeatures
+					]
+				else
+					# Interpolate
+					dataPoints = []
+
+					# iterates through the Features/Axis
+					# Start at 2, bc we check the precious axis/feature f
+					for j in 2:numberFeatures
+						last_x = offset + ((j-1) - 1) / (numberFeatures - 1) * width
+						current_x = offset + ((j) - 1) / (numberFeatures - 1) * width
+
+						last_y = (parsed_data[j-1][i] - limits[j-1][1]) / (limits[j-1][2] - limits[j-1][1]) * height + offset
+						current_y = (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
+
+						# interpolate points between the current and the last point
+						for x in range(last_x, current_x, step = ( (current_x-last_x) / 30 ) )
+							# calculate the interpolated Y Value
+							y = interpolate(last_x, current_x, last_y, current_y, x)
+							# create a new Point
+							push!(dataPoints, Point2f(x,y))
+						end
+					end
+
+				end
+
+			# Color
             color_val = color_values[i]
 
+			# Create the Line
             lines!(scene, dataPoints,
                 color = color_val,
                 colormap = pp.colormap[],
                 colorrange = (color_min, color_max)
             )
-			# lines!(scene, dataPoints, color = pp.custom_colors[][color_idx])
 		end
 
 		# # # # # # # # # #
 		# # # A X I S # # #
 		# # # # # # # # # #
 
-		# set the axis labels, if available
-		# check if ax_label has the same amount of labels as axis
-		label = if isnothing(pp.ax_label[])  # check if ax_label is set
-			names(data) # ax_label is not set, use the DB label
-		else
-			@assert length(pp.ax_label[]) === length(names(data)) "'ax_label' is set but has not the same amount of labels("*string(length(pp.ax_label[]))*") as axis("*string(length(names(data)))*")"
-			pp.ax_label[]
-		end
+
 
 		# Create the new Parallel Axis
 		for i in 1:numberFeatures
@@ -193,7 +301,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 			def = Makie.default_attribute_values(Axis, nothing)
 
 			# LineAxis will create one Axis Vertical, for each Feature one Axis
-			Makie.LineAxis(
+			axis = Makie.LineAxis(
 				scene,
 				limits = limits[i],
 				dim_convert = Makie.NoDimConversion(),
@@ -203,14 +311,19 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 				spinecolor = :black,
 				spinevisible = true,
 				labelfont = def[:ylabelfont],
-                # rotate the label
-				labelrotation = π/2,
-				labelvisible = true,
-                # use either the dataFrame Name or the user-set labels
-				label = string(label[i]),
+				labelrotation = def[:ylabelrotation],
+				labelvisible = false,
 				ticklabelfont = def[:yticklabelfont],
 				ticklabelsize = def[:yticklabelsize],
 				minorticks = def[:yminorticks],
+			)
+
+			# Create Lable for the Axis
+			axis_title!(
+				scene,
+				axis.attributes.endpoints,
+				string(labels[i]);
+				titlegap = def[:titlegap],
 			)
 		end
 
@@ -228,5 +341,46 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 	pp
 end
 
+function axis_title!(
+    topscene,
+    endpoints::Observable,
+    title::String;
+    titlegap = Observable(4.0f0),
+)
+    titlepos = lift(endpoints, titlegap) do a, titlegap
+        x = a[1][1]
+        y = a[2][2] + titlegap
+        Point2(x, y)
+    end
+
+    titlet = text!(
+        topscene,
+        title,
+        position = titlepos,
+        #visible =
+        #fontsize =
+        align = (:center, :bottom),
+        #font =
+        #color =
+        space = :data,
+        #show_axis=false,
+        inspectable = false,
+    )
+end
+
+# Interpolates between the x and y point
+# Inputs a x value
+# Outputs a y value
+function interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)
+
+	# calculate the % of Pi related to x between two x points
+	x_pi = (x - last_x)/(current_x - last_x) * π
+
+	# calculate the % difference between both x Values
+	y_scale = 0.5-0.5*cos(x_pi) #between 0-1
+
+	return last_y + y_scale * (current_y - last_y)
+
+end
 
 end
