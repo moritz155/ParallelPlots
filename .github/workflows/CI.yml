@@ -2,7 +2,6 @@ name: CI
 on:
   push:
     branches:
-    - '*'
     tags: ['*']
   pull_request:
   workflow_dispatch:
@@ -39,8 +38,3 @@ jobs:
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
-      - uses: codecov/codecov-action@v4
-        with:
-          files: lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
