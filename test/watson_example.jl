@@ -1,5 +1,5 @@
 using DrWatson: display, @unpack, push!, first, Dict, dict_list
-using DataFrames: DataFrame
+using DataFrames: DataFrame, nrow
 using ParallelPlots: parallelplot
 using CairoMakie: save
 
@@ -75,7 +75,7 @@ function main()
     println("Total parameter combinations: ", nrow(results))
     println("\nSample results:")
     display(first(results, 5))
-    fig = parallelplot(results, color_feature=5)
+    fig = parallelplot(results, color_feature="initial_velocity")
     save("projectile_simulation.png", fig)
 end
 

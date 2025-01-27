@@ -1,9 +1,9 @@
 module ParallelPlots
 
-using CairoMakie: Makie, Axis, Colorbar, Point2f, Point2, text!, lines!, empty!, current_figure, hidespines!, size, Observable, lift, @recipe, Attributes, hidedecorations!
-#using CairoMakie
-#import Makie: plot!, default_attribute_values, LineAxis, NoDimConversion, automatic, Observables 
-using DataFrames: DataFrame, names, eachcol, size, minimum, maximum
+using CairoMakie
+using DataFrames
+#using Interpolations
+
 
 function normalize_DF(data::DataFrame)
 	for col in names(data)
@@ -153,7 +153,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 			# therefore we need to check if user selected features
 			if !isnothing(pp.feature_selection[])
 				# use the last seleted feature as color_col
-				@assert pp.feature_selection[][end] in names(data) "Feature Selection ("*pp.feature_selection[][end]*") is not available in DataFrame ("*string(names(data))*")"
+				@assert pp.feature_selection[][end] in names(data) "Feature Selection ("*repr(pp.feature_selection[][end])*") is not available in DataFrame ("*string(names(data))*")"
 				pp.feature_selection[][end]
 			else
 				names(data)[end] # no columns selected, use the last one
@@ -161,7 +161,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 
 		else
 			# check if name is available
-			@assert pp.color_feature[] in names(data) "Color Feature ("*pp.color_feature[]*") is not available in DataFrame ("*string(names(data))*")"
+			@assert pp.color_feature[] in names(data) "Color Feature ("*repr(pp.color_feature[])*") is not available in DataFrame ("*string(names(data))*")"
 			pp.color_feature[]
 		end
         color_values = data[:,color_col]  # Get all values for selected feature
