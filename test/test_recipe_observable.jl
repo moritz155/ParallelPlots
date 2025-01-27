@@ -1,7 +1,6 @@
-#include("test_utils.jl")
-using ParallelPlots
-using CairoMakie # for Record Video
-using Test
+using ParallelPlots: parallelplot
+using CairoMakie:Observable, record # for Record Video
+using Test: @testset
 
 using DataFrames
 

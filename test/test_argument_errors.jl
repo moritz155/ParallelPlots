@@ -1,7 +1,6 @@
-using ParallelPlots
-using Test
-
-using DataFrames
+using ParallelPlots: parallelplot
+using Test: @testset, @test_throws 
+using DataFrames: DataFrame
 
 @testset "ArgumentError Tests" begin
     df_missing = DataFrame(Name=["Alice", "Bob", "Charlie"],

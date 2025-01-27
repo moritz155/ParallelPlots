@@ -1,5 +1,5 @@
-using ParallelPlots
-using Test
+using ParallelPlots: parallelplot
+using Test: @test
 
 using DataFrames
 

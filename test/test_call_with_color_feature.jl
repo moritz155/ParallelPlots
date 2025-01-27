@@ -1,6 +1,5 @@
-#include("test_utils.jl")
-using ParallelPlots
-using Test
+using ParallelPlots: parallelplot
+using Test: @testset, @test, @test_throws
 
 @testset "call with color feature Axis" begin
 

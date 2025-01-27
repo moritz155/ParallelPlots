@@ -1,12 +1,12 @@
-using Random
-using DataFrames
-using CairoMakie
+using Random: seed!, rand
+using DataFrames: DataFrame
+using CairoMakie: LineSegments, save, Lines
 
 
 #generate Data
 function create_person_df(n_samples = 10)
 
-    Random.seed!(10)
+    seed!(10)
     df = DataFrame(
         height=rand(150:180, n_samples),
         weight=rand(40:130, n_samples),
@@ -19,7 +19,7 @@ function create_person_df(n_samples = 10)
 end
 function create_car_df(n_samples = 10)
 
-    Random.seed!(10)
+    seed!(10)
     df = DataFrame(
         horsepower=rand(60:300, n_samples),
         weight=rand(90:2000, n_samples),
