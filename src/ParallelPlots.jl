@@ -2,7 +2,6 @@ module ParallelPlots
 
 using CairoMakie
 using DataFrames
-using Interpolations
 
 
 function normalize_DF(data::DataFrame)
@@ -16,7 +15,7 @@ end
 
 
 function input_data_check(data::DataFrame)
-	if data === nothing
+	if isnothing(data)
 		throw(ArgumentError("Data cannot be nothing"))
 	end
 	if size(data, 2) < 2 # otherwise there will be a nullpointer exception later
@@ -34,7 +33,6 @@ end
 
 
 """
-- Julia version: 1.10.5
 
 # Constructors
 ```julia
@@ -43,12 +41,17 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 
 # Arguments
 
-- `data::DataFrame`:
-- `normalize::Bool`:
-- `color_feature::String || nothing`: select, which axis/feature should be used for the coloring (e.g. 'weight') (default: last)
-- `title::String`:
-- `feature_labels::String`:
-- `curve::Bool`:
+| Parameter         | Default  | Example                            | Description                                                                                                            |
+|-------------------|----------|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| normalize::Bool   | false    | normalize=true                     | If the Data should be normalized (min/max)                                                                             |
+| title::String     | ""       | title="My Title"                   | The Title of The Figure,                                                                                               |
+| colormap          | :viridis | colormap=:thermal                  | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                              |
+| color_feature     | nothing  | color_feature="weight"             | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used |
+| feature_labels    | nothing  | feature_labels=["Weight","Age"]    | Add your own Axis labels, just use the exact amount of labes as you have axis                                          |
+| feature_selection | nothing  | feature_selection=["weight","age"] | Select, which features should be Displayed. If color_feature is not in this List, use the last one                     |
+| curve             | false    | curve=true                         | Show the Lines Curved                                                                                                  |
+| show_color_legend | nothing  | show_color_legend=true             | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automaticly                |
+
 
 # Examples
 ```@example
@@ -357,7 +360,7 @@ end
 # Interpolates between the x and y point
 # Inputs a x value
 # Outputs a y value
-function interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)
+function interpolate(last_x::T, current_x::T, last_y::T, current_y::T, x::T) where {T<:Real}
 
 	# calculate the % of Pi related to x between two x points
 	x_pi = (x - last_x)/(current_x - last_x) * π
