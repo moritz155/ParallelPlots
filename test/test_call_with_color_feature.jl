@@ -38,10 +38,11 @@ using Test
     )
     save("parallel_coordinates_plot_color_no_selection.png", fig)
 
-    fig = parallelplot(df,
+    fig = parallelplot(create_person_df(20),
         color_feature="weight",
         colormap=:thermal,
-        show_color_legend = true
+        show_color_legend = true,
+        curve= true
     )
     save("parallel_coordinates_plot_color_with_bar.png", fig)
 

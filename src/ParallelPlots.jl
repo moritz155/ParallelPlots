@@ -172,7 +172,6 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		if !isnothing(pp.feature_selection[])
 			# check if all given selections are in the DF
 			for selection in pp.feature_selection[]
-				println(selection)
 				@assert selection in names(data) "Feature Selection ("*selection*") is not available in DataFrame ("*string(names(data))*")"
 			end
 			data = data[:, pp.feature_selection[]]

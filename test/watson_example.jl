@@ -74,7 +74,13 @@ function main()
     println("Total parameter combinations: ", nrow(results))
     println("\nSample results:")
     display(first(results, 5))
-    fig = parallelplot(results, color_feature=5)
+    fig = parallelplot(results,
+        figure = (size = (1300, 700),),
+        curve=true,
+        color_feature="max_height",
+        feature_selection=["initial_velocity","launch_angle","air_resistance","gravity","total_distance","time_of_flight"],
+        feature_labels=["Initial Velocity","Launch Angle","Air Resistance","Gravity","Total Distance","Time of Flight"],
+    )
     save("projectile_simulation.png", fig)
 end
 
