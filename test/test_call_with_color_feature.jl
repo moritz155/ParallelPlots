@@ -15,6 +15,7 @@ using Test
     save("parallel_coordinates_plot_color_axis_weight.png", fig)
 
     fig = parallelplot(df,
+        title="Based on Weight",
         color_feature="weight",
         feature_selection=["height","age","income"],
         feature_labels=["Height","Age","Income"],

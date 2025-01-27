@@ -10,7 +10,6 @@ This Project is for the TU-Berlin Course "Julia Programming for Machine Learning
 Please make sure, that Julia `1.10` is used!
 
 This Module will return you a nice Scene you can use to display your Data with [Parallel Coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates)<br>
-<img src="test/parallel_coordinates_plot.png" width="300" />
 <img src="test/projectile_simulation.png" width="300" />
 
 _This Module was created with PkgTemplates.jl_

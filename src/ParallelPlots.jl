@@ -128,24 +128,11 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		empty!(fig)
 		scene = fig.scene
 
-		# get the parent scene dimensions
-		scene_width, scene_height = size(scene)
-
 		# Create Overlaying, invisible Axis
 		# set hight to fit Label
 		ax = Axis(fig[1, 1],
-			title = pp.title,
-			height=(scene_height-
-				(
-					2*Makie.default_attribute_values(Axis, nothing)[:titlegap]+
-					Makie.default_attribute_values(Axis, nothing)[:titlesize]
-				)
-			)
+			title = pp.title
 		)
-
-		# make the Axis invisible
-		hidespines!(ax)
-		hidedecorations!(ax)
 
 		# set the Color of the Color Feature
 		color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
@@ -186,10 +173,6 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 			pp.feature_labels[]
 		end
 
-		# Plot dimensions
-		width = scene_width[] * 0.80  #% of scene width
-		height = scene_height[] * 0.80  #% of scene width
-		offset = min(scene_width[], scene_height[]) * 0.10  #% of scene dimensions
 
 		# COLOR FEATURE
 		# If set, use the setted value
@@ -206,21 +189,25 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 
 		# set the Color Bar on the side if it should be set
 		if show_color_legend[]
-			# update the width, combined -> 75%
-			bar_width = scene_width[] * 0.05 #% of scene width
-			width = scene_width[] * 0.75 #% of scene width
-
 			Colorbar(
 				fig[1, 2],
 				limits = (color_min, color_max),
 				colormap = pp.colormap[],
-				height = height,
-				width = bar_width,
-
-				label = color_col
+				label = color_col,
 			)
 		end
 
+		# get the parent scene dimensions
+		scene_width, scene_height = size(ax.scene)
+
+		# Plot dimensions
+		width = scene_width[] * 0.95  #% of scene width
+		height = scene_height[] * 0.95  #% of scene width
+		offset = min(scene_width[], scene_height[]) * 0.1  #% of scene dimensions
+
+		# make the Axis invisible
+		hidespines!(ax)
+		hidedecorations!(ax)
 
 		# Parse the DataFrame into a list of arrays
 		parsed_data = [data[!, col] for col in names(data)]
