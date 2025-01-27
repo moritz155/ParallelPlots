@@ -107,8 +107,34 @@ parallelplot(df,
 	)
 end
 
+# Calculates the Color for the colorfeature
+function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractString, Vector{Real}, Real, Real}
+	color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
+		# Its not Set, use the last feature
+		# therefore we need to check if user selected features
+		if !isnothing(pp.feature_selection[])
+			# use the last seleted feature as color_col
+			@assert pp.feature_selection[][end] in names(data) "Feature Selection ("*pp.feature_selection[][end]*") is not available in DataFrame ("*string(names(data))*")"
+			pp.feature_selection[][end]
+		else
+			names(data)[end] # no columns selected, use the last one
+		end
 
-function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
+	else
+		# check if name is available
+		@assert pp.color_feature[] in names(data) "Color Feature ("*pp.color_feature[]*") is not available in DataFrame ("*string(names(data))*")"
+		pp.color_feature[]
+	end
+    color_values = data[:,color_col]  # Get all values for selected feature
+    color_min = minimum(color_values)
+    color_max = maximum(color_values)
+
+	return color_col, color_values, color_min, color_max
+
+end
+
+
+function Makie.plot!(pp::ParallelPlot)
 
 	# our first parameter is the DataFrame-Observable
 	df_observable = pp[1]
@@ -138,25 +164,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 		)
 
 		# set the Color of the Color Feature
-		color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
-			# Its not Set, use the last feature
-			# therefore we need to check if user selected features
-			if !isnothing(pp.feature_selection[])
-				# use the last seleted feature as color_col
-				@assert pp.feature_selection[][end] in names(data) "Feature Selection ("*pp.feature_selection[][end]*") is not available in DataFrame ("*string(names(data))*")"
-				pp.feature_selection[][end]
-			else
-				names(data)[end] # no columns selected, use the last one
-			end
-
-		else
-			# check if name is available
-			@assert pp.color_feature[] in names(data) "Color Feature ("*pp.color_feature[]*") is not available in DataFrame ("*string(names(data))*")"
-			pp.color_feature[]
-		end
-        color_values = data[:,color_col]  # Get all values for selected feature
-        color_min = minimum(color_values)
-        color_max = maximum(color_values)
+		color_col, color_values, color_min, color_max = calculate_color(pp, data)
 
 		# Select the Columns, the user wants to show (feature_selection)
 		if !isnothing(pp.feature_selection[])
@@ -330,6 +338,7 @@ function Makie.plot!(pp::ParallelPlot{<:Tuple{<:DataFrame}})
 	pp
 end
 
+# Creates an Axis on top of each feature/axis
 function axis_title!(
     topscene,
     endpoints::Observable,
