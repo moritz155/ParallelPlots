@@ -75,7 +75,7 @@ function main()
     println("Total parameter combinations: ", nrow(results))
     println("\nSample results:")
     display(first(results, 5))
-    fig = parallelplot(results, color_feature="initial_velocity")
+    fig = parallelplot(results, color_feature=5)
     save("projectile_simulation.png", fig)
 end
 
