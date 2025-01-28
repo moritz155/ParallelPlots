@@ -1,6 +1,6 @@
 using Random: seed!, rand
 using DataFrames: DataFrame
-using CairoMakie: LineSegments, save, Lines
+using CairoMakie: LineSegments, Lines
 
 
 #generate Data

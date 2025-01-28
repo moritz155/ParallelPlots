@@ -1,5 +1,6 @@
 using ParallelPlots: parallelplot
 using Test: @testset, @test, @test_throws
+using CairoMakie: save
 @testset "call with feature_labels" begin
     # Generate sample multivariate data
     df = create_person_df(3)

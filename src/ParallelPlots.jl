@@ -1,8 +1,7 @@
 module ParallelPlots
 
-using CairoMakie
-using DataFrames
-#using Interpolations
+using CairoMakie: Makie, Axis, Colorbar, Point2f, Point2, text!, lines!, empty!, current_figure, hidespines!, size, Observable, lift, @recipe, Attributes, hidedecorations!
+using DataFrames: DataFrame, names, eachcol, size, minimum, maximum
 
 
 function normalize_DF(data::DataFrame)

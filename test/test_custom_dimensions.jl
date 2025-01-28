@@ -1,5 +1,6 @@
 using ParallelPlots: parallelplot
-using Test:@test
+using Test:@test, @testset
+using CairoMakie: save
 
 @testset "call with scene width & height" begin
 
