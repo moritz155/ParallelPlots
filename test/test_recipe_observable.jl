@@ -19,9 +19,8 @@ using DataFrames
 
     # we can change a parameter and the graph will be automaticly changed
     curve_observable[] = false
-    normalize_observable[] = false
-    title_observable[] = "No Normalization"
-    save("pcp_initialized_normalized_Changed.png", fig)
+    title_observable[] = "No Curve"
+    save("pcp_initialized_curve_Changed.png", fig)
 
     # Record for Debug purpose
     record(fig, "PCP_recipe_animation.mp4", 2:60, framerate = 2) do t

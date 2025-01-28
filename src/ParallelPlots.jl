@@ -113,9 +113,6 @@ function Makie.plot!(pp::ParallelPlot)
 	# whenever df_observable change
 	function update_plot(data)
 
-		println("update_plot")
-		println(pp.normalize[])
-
 		# check the given DataFrame
 		input_data_check(data)
 
@@ -160,15 +157,7 @@ function Makie.plot!(pp::ParallelPlot)
 		# COLOR FEATURE
 		# If set, use the setted value
 		# Show, when color_feature is not in feature_selection
-		show_color_legend = if pp.show_color_legend[] == true
-			true
-		elseif pp.show_color_legend[] == false
-			false
-		elseif !isnothing(pp.feature_selection[]) && !(pp.color_feature[] in pp.feature_selection[])
-			true
-		else
-			false
-		end
+		show_color_legend = show_color_legend!(pp)
 
 		# set the Color Bar on the side if it should be set
 		if show_color_legend[]
@@ -206,54 +195,21 @@ function Makie.plot!(pp::ParallelPlot)
 		# # # # # # # # # #
 
 		# Draw lines connecting points for each row
-		for i in 1:sampleSize
-				# If Curved, Interpolate
-				if(pp.curve[] == false)
-    				# calcuating the point respectivly of the width and height in the Screen
-    				dataPoints = [
-						Point2f(
-							# calculates which feature the Point should be on
-							offset + (j - 1) / (numberFeatures - 1) * width,
-							# calculates the Y axis value
-							(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset,
-						)
-						# iterates through the Features/Axis and creates for each feature the samplePoint (above)
-						for j in 1:numberFeatures
-					]
-				else
-					# Interpolate
-					dataPoints = []
-
-					# iterates through the Features/Axis
-					# Start at 2, bc we check the precious axis/feature f
-					for j in 2:numberFeatures
-						last_x = offset + ((j-1) - 1) / (numberFeatures - 1) * width
-						current_x = offset + ((j) - 1) / (numberFeatures - 1) * width
-
-						last_y = (parsed_data[j-1][i] - limits[j-1][1]) / (limits[j-1][2] - limits[j-1][1]) * height + offset
-						current_y = (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
-
-						# interpolate points between the current and the last point
-						for x in range(last_x, current_x, step = ( (current_x-last_x) / 30 ) )
-							# calculate the interpolated Y Value
-							y = interpolate(last_x, current_x, last_y, current_y, x)
-							# create a new Point
-							push!(dataPoints, Point2f(x,y))
-						end
-					end
-
-				end
-
-			# Color
-            color_val = color_values[i]
-
-			# Create the Line
-            lines!(scene, dataPoints,
-                color = color_val,
-                colormap = pp.colormap[],
-                colorrange = (color_min, color_max)
-            )
-		end
+		draw_lines(
+			scene,
+			pp,
+			data,
+			width,
+			height,
+			offset,
+			limits,
+			numberFeatures,
+			sampleSize,
+			parsed_data,
+			color_values,
+			color_min,
+			color_max
+		)
 
 		# # # # # # # # # #
 		# # # A X I S # # #
@@ -324,8 +280,7 @@ function Makie.plot!(pp::ParallelPlot)
 	pp
 end
 
-# Calculates the Color for the colorfeature
-function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractString, Vector{Real}, Real, Real}
+function get_color_col(pp::ParallelPlot, data::DataFrame) :: AbstractString
 	color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
 		# Its not Set, use the last feature
 		# therefore we need to check if user selected features
@@ -342,6 +297,12 @@ function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractStr
 		@assert pp.color_feature[] in names(data) "Color Feature ("*pp.color_feature[]*") is not available in DataFrame ("*string(names(data))*")"
 		pp.color_feature[]
 	end
+	return color_col
+end
+
+# Calculates the Color for the colorfeature
+function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractString, Vector{Real}, Real, Real}
+	color_col = get_color_col(pp, data)
     color_values = data[:,color_col]  # Get all values for selected feature
     color_min = minimum(color_values)
     color_max = maximum(color_values)
@@ -349,6 +310,83 @@ function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractStr
 	return color_col, color_values, color_min, color_max
 
 end
+
+# COLOR FEATURE
+# If set, use the setted value
+# Show, when color_feature is not in feature_selection
+function show_color_legend!(pp) :: Bool
+	if pp.show_color_legend[] == true
+		return true
+	elseif pp.show_color_legend[] == false
+		return false
+	elseif !isnothing(pp.feature_selection[]) && !(pp.color_feature[] in pp.feature_selection[])
+		return true
+	else
+		return false
+	end
+end
+
+# Draw lines connecting points for each row
+function draw_lines(
+    scene,
+	pp,
+	data,
+	width::Number,
+	height::Number,
+	offset::Number,
+	limits,
+	numberFeatures::Number,
+	sampleSize::Number,
+	parsed_data,
+	color_values,
+	color_min,
+	color_max
+	)
+	for i in 1:sampleSize
+		# If Curved, Interpolate
+		if(pp.curve[] == false)
+    		# calcuating the point respectivly of the width and height in the Screen
+    		dataPoints = [
+				Point2f(
+					# calculates which feature the Point should be on
+					offset + (j - 1) / (numberFeatures - 1) * width,
+					# calculates the Y axis value
+					(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset,
+				)
+				# iterates through the Features/Axis and creates for each feature the samplePoint (above)
+				for j in 1:numberFeatures
+			]
+		else
+			# Interpolate
+			dataPoints = []
+
+			# iterates through the Features/Axis
+			# Start at 2, bc we check the precious axis/feature f
+			for j in 2:numberFeatures
+				last_x = offset + ((j-1) - 1) / (numberFeatures - 1) * width
+				current_x = offset + ((j) - 1) / (numberFeatures - 1) * width
+					last_y = (parsed_data[j-1][i] - limits[j-1][1]) / (limits[j-1][2] - limits[j-1][1]) * height + offset
+				current_y = (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
+					# interpolate points between the current and the last point
+				for x in range(last_x, current_x, step = ( (current_x-last_x) / 30 ) )
+					# calculate the interpolated Y Value
+					y = interpolate(last_x, current_x, last_y, current_y, x)
+					# create a new Point
+					push!(dataPoints, Point2f(x,y))
+				end
+			end
+
+		end
+
+		# Create the Line
+        lines!(scene, dataPoints,
+        	color = color_values[i],
+            colormap = pp.colormap[],
+            colorrange = (color_min, color_max)
+        )
+	end
+end
+
 
 # Creates an Axis on top of each feature/axis
 function axis_title!(
