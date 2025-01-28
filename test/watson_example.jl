@@ -1,7 +1,7 @@
 using DrWatson: display, @unpack, push!, first, Dict, dict_list
 using DataFrames: DataFrame, nrow
 using ParallelPlots: parallelplot
-using CairoMakie: save
+using CairoMakie: save, Observable, record
 
 function projectile_simulation()
     dicts = prepare_simulation()
