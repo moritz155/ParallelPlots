@@ -1,6 +1,6 @@
 module ParallelPlots
 
-using CairoMakie: Makie, Axis, Colorbar, Point2f, Point2, text!, lines!, empty!, current_figure, hidespines!, size, Observable, lift, @recipe, Attributes, hidedecorations!
+using CairoMakie: Makie, Axis, Colorbar, Point2f, Point2, text!, lines!, empty!, current_figure, hidespines!, size, Observable, lift, @recipe, Attributes, hidedecorations!, on
 using DataFrames: DataFrame, names, eachcol, size, minimum, maximum
 
 
