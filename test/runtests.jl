@@ -9,3 +9,6 @@ include("test_custom_dimensions.jl")
 include("test_default_call.jl")
 include("test_recipe_observable.jl")
 include("test_lines_count.jl")
+
+# Watson
+include("watson_example.jl")
