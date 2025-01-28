@@ -15,6 +15,7 @@ using CairoMakie: save
     save("parallel_coordinates_plot_color_axis_weight.png", fig)
 
     fig = parallelplot(df,
+        title="Based on Weight",
         color_feature="weight",
         feature_selection=["height","age","income"],
         feature_labels=["Height","Age","Income"],
@@ -38,10 +39,11 @@ using CairoMakie: save
     )
     save("parallel_coordinates_plot_color_no_selection.png", fig)
 
-    fig = parallelplot(df,
+    fig = parallelplot(create_person_df(20),
         color_feature="weight",
         colormap=:thermal,
-        show_color_legend = true
+        show_color_legend = true,
+        curve= true
     )
     save("parallel_coordinates_plot_color_with_bar.png", fig)
 

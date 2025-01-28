@@ -83,17 +83,17 @@ function find_minimal_distinct_params(arr_of_dicts)
         param => unique([Float64(d[param]) for d in arr_of_dicts])  # Ensure all values are Float64
         for param in params
     )
-    
+
     # Only two different values for each parameter
     minimal_values = Dict(
         param => param_values[param][1:min(2, length(param_values[param]))]
         for param in params
     )
-    
+
     # Create minimal set with proper types
     result = Vector{Dict{String, Float64}}()  # Specify the exact type of the result
     push!(result, Dict(param => minimal_values[param][1] for param in params))
-    
+
     for param in params
         if length(minimal_values[param]) > 1
             new_dict = copy(result[1])  # Copy the base dict
@@ -101,7 +101,7 @@ function find_minimal_distinct_params(arr_of_dicts)
             push!(result, new_dict)
         end
     end
-    
+
     return result
 end
 
@@ -111,8 +111,14 @@ function main()
     println("Total parameter combinations: ", nrow(results))
     println("\nSample results:")
     display(first(results, 5))
-    fig = parallelplot(results)
-    save("projectile_simulation_final.png", fig)
+    fig = parallelplot(results,
+        figure = (size = (1300, 700),),
+        curve=true,
+        color_feature="max_height",
+        feature_selection=["initial_velocity","launch_angle","air_resistance","gravity","total_distance","time_of_flight"],
+        feature_labels=["Initial Velocity","Launch Angle","Air Resistance","Gravity","Total Distance","Time of Flight"],
+    )
+    save("projectile_simulation.png", fig)
 end
 
 # Run the simulation
