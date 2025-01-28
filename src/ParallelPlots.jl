@@ -19,13 +19,12 @@ function input_data_check(data::DataFrame)
 		throw(ArgumentError("Data cannot be nothing"))
 	end
 	if size(data, 2) < 2 # otherwise there will be a nullpointer exception later
-		throw(ArgumentError("Data must have at least two columns"))
+		throw(ArgumentError("Data must have at least two columns, currently ("*string(size(data, 2))*")"))
 	end
 	if size(data, 1) < 2 # otherwise there will be a nullpointer exception later
-		throw(ArgumentError("Data must have at least two lines"))
+		throw(ArgumentError("Data must have at least two lines, currently ("*string(size(data, 1))*") Rows"))
 	end
 	if any(collect(any(ismissing.(c)) for c in eachcol(data))) # checks for missing values
-		println("There are missing values in the DataFrame.")
 		throw(ArgumentError("Data cannot have missing values"))
 	end
 end
@@ -107,42 +106,15 @@ parallelplot(df,
 	)
 end
 
-# Calculates the Color for the colorfeature
-function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractString, Vector{Real}, Real, Real}
-	color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
-		# Its not Set, use the last feature
-		# therefore we need to check if user selected features
-		if !isnothing(pp.feature_selection[])
-			# use the last seleted feature as color_col
-			@assert pp.feature_selection[][end] in names(data) "Feature Selection ("*pp.feature_selection[][end]*") is not available in DataFrame ("*string(names(data))*")"
-			pp.feature_selection[][end]
-		else
-			names(data)[end] # no columns selected, use the last one
-		end
-
-	else
-		# check if name is available
-		@assert pp.color_feature[] in names(data) "Color Feature ("*pp.color_feature[]*") is not available in DataFrame ("*string(names(data))*")"
-		pp.color_feature[]
-	end
-    color_values = data[:,color_col]  # Get all values for selected feature
-    color_min = minimum(color_values)
-    color_max = maximum(color_values)
-
-	return color_col, color_values, color_min, color_max
-
-end
-
 
 function Makie.plot!(pp::ParallelPlot)
-
-	# our first parameter is the DataFrame-Observable
-	df_observable = pp[1]
-
 
 	# this helper function will update our observables
 	# whenever df_observable change
 	function update_plot(data)
+
+		println("update_plot")
+		println(pp.normalize[])
 
 		# check the given DataFrame
 		input_data_check(data)
@@ -327,6 +299,20 @@ function Makie.plot!(pp::ParallelPlot)
 
     end
 
+	# our first parameter is the DataFrame-Observable
+	df_observable = pp[1]
+
+	# add listener to Observable Arguments and trigger an update on change
+	# loop thorough the given Arguments
+	for kw in pp.kw
+		# e.g. normalize
+		attribute_key = kw[1]
+		on(pp[attribute_key]) do x
+			# trigger update
+			notify(df_observable)
+		end
+	end
+
 	# connect `update_plot` so that it is called whenever the DataFrame changes
 	Makie.Observables.onany(update_plot, df_observable)
 
@@ -336,6 +322,32 @@ function Makie.plot!(pp::ParallelPlot)
 
 	# lastly we return the new ParallelPlot
 	pp
+end
+
+# Calculates the Color for the colorfeature
+function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractString, Vector{Real}, Real, Real}
+	color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
+		# Its not Set, use the last feature
+		# therefore we need to check if user selected features
+		if !isnothing(pp.feature_selection[])
+			# use the last seleted feature as color_col
+			@assert pp.feature_selection[][end] in names(data) "Feature Selection ("*pp.feature_selection[][end]*") is not available in DataFrame ("*string(names(data))*")"
+			pp.feature_selection[][end]
+		else
+			names(data)[end] # no columns selected, use the last one
+		end
+
+	else
+		# check if name is available
+		@assert pp.color_feature[] in names(data) "Color Feature ("*pp.color_feature[]*") is not available in DataFrame ("*string(names(data))*")"
+		pp.color_feature[]
+	end
+    color_values = data[:,color_col]  # Get all values for selected feature
+    color_min = minimum(color_values)
+    color_max = maximum(color_values)
+
+	return color_col, color_values, color_min, color_max
+
 end
 
 # Creates an Axis on top of each feature/axis
