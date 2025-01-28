@@ -1,6 +1,5 @@
-#include("test_utils.jl")
-using ParallelPlots
-using Test
+using ParallelPlots: parallelplot
+using Test: @testset, @test
 
 @testset "call with normalize" begin
 

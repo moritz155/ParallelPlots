@@ -1,7 +1,7 @@
-using ParallelPlots
-using Test
+using ParallelPlots:parallelplot
+using Test: @test
 
-using DataFrames
+using DataFrames: DataFrame
 
 @testset "default call curved" begin
 

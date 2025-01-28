@@ -1,7 +1,5 @@
-#include("test_utils.jl")
-
-using ParallelPlots
-using Test
+using ParallelPlots: parallelplot
+using Test: @test
 
 @testset "Lines Count" begin
     df=create_person_df()
