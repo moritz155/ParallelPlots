@@ -216,41 +216,16 @@ function Makie.plot!(pp::ParallelPlot)
 		# # # # # # # # # #
 
 
-
 		# Create the new Parallel Axis
-		for i in 1:numberFeatures
-			# x will be used to split the Scene for each feature
-			x = numberFeatures==1 ? width/2 : (i - 1) / (numberFeatures - 1) * width
-
-			# get default
-			def = Makie.default_attribute_values(Axis, nothing)
-
-			# LineAxis will create one Axis Vertical, for each Feature one Axis
-			axis = Makie.LineAxis(
-				scene,
-				limits = limits[i],
-				dim_convert = Makie.NoDimConversion(),
-                # the lowest and highest point to maximize the Axis from Bottom to Top
-				endpoints = Point2f[(offset + x, offset), (offset + x, offset + height)],
-				tickformat = Makie.automatic,
-				spinecolor = :black,
-				spinevisible = true,
-				labelfont = def[:ylabelfont],
-				labelrotation = def[:ylabelrotation],
-				labelvisible = false,
-				ticklabelfont = def[:yticklabelfont],
-				ticklabelsize = def[:yticklabelsize],
-				minorticks = def[:yminorticks],
-			)
-
-			# Create Lable for the Axis
-			axis_title!(
-				scene,
-				axis.attributes.endpoints,
-				string(labels[i]);
-				titlegap = def[:titlegap],
-			)
-		end
+		draw_axis(
+			scene,
+			width,
+			height,
+			offset,
+			limits,
+			labels,
+			numberFeatures
+		)
 
 
     end
@@ -384,6 +359,50 @@ function draw_lines(
             colormap = pp.colormap[],
             colorrange = (color_min, color_max)
         )
+	end
+end
+
+function draw_axis(
+    scene,
+	width::Number,
+	height::Number,
+	offset::Number,
+	limits,
+	labels,
+	numberFeatures::Number,
+	)
+	for i in 1:numberFeatures
+		# x will be used to split the Scene for each feature
+		x = numberFeatures==1 ? width/2 : (i - 1) / (numberFeatures - 1) * width
+
+		# get default
+		def = Makie.default_attribute_values(Axis, nothing)
+
+		# LineAxis will create one Axis Vertical, for each Feature one Axis
+		axis = Makie.LineAxis(
+			scene,
+			limits = limits[i],
+			dim_convert = Makie.NoDimConversion(),
+               # the lowest and highest point to maximize the Axis from Bottom to Top
+			endpoints = Point2f[(offset + x, offset), (offset + x, offset + height)],
+			tickformat = Makie.automatic,
+			spinecolor = :black,
+			spinevisible = true,
+			labelfont = def[:ylabelfont],
+			labelrotation = def[:ylabelrotation],
+			labelvisible = false,
+			ticklabelfont = def[:yticklabelfont],
+			ticklabelsize = def[:yticklabelsize],
+			minorticks = def[:yminorticks],
+		)
+
+		# Create Lable for the Axis
+		axis_title!(
+			scene,
+			axis.attributes.endpoints,
+			string(labels[i]);
+			titlegap = def[:titlegap],
+		)
 	end
 end
 
