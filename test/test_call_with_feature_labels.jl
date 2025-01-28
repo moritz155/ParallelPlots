@@ -1,5 +1,5 @@
-using ParallelPlots
-using Test
+using ParallelPlots: parallelplot
+using Test: @testset, @test, @test_throws
 @testset "call with feature_labels" begin
     # Generate sample multivariate data
     df = create_person_df(3)

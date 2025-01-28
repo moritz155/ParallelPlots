@@ -1,6 +1,5 @@
-#include("test_utils.jl")
-using ParallelPlots
-using Test
+using ParallelPlots: parallelplot
+using Test:@test
 
 @testset "call with scene width & height" begin
 

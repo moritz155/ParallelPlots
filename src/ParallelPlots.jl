@@ -282,21 +282,21 @@ end
 
 function get_color_col(pp::ParallelPlot, data::DataFrame) :: AbstractString
 	color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
-		# Its not Set, use the last feature
-		# therefore we need to check if user selected features
-		if !isnothing(pp.feature_selection[])
-			# use the last seleted feature as color_col
-			@assert pp.feature_selection[][end] in names(data) "Feature Selection ("*pp.feature_selection[][end]*") is not available in DataFrame ("*string(names(data))*")"
-			pp.feature_selection[][end]
-		else
-			names(data)[end] # no columns selected, use the last one
-		end
+			# Its not Set, use the last feature
+			# therefore we need to check if user selected features
+			if !isnothing(pp.feature_selection[])
+				# use the last seleted feature as color_col
+				@assert pp.feature_selection[][end] in names(data) "Feature Selection ("*repr(pp.feature_selection[][end])*") is not available in DataFrame ("*string(names(data))*")"
+				pp.feature_selection[][end]
+			else
+				names(data)[end] # no columns selected, use the last one
+			end
 
-	else
-		# check if name is available
-		@assert pp.color_feature[] in names(data) "Color Feature ("*pp.color_feature[]*") is not available in DataFrame ("*string(names(data))*")"
-		pp.color_feature[]
-	end
+		else
+			# check if name is available
+			@assert pp.color_feature[] in names(data) "Color Feature ("*repr(pp.color_feature[])*") is not available in DataFrame ("*string(names(data))*")"
+			pp.color_feature[]
+		end
 	return color_col
 end
 
@@ -419,7 +419,7 @@ end
 # Interpolates between the x and y point
 # Inputs a x value
 # Outputs a y value
-function interpolate(last_x::T, current_x::T, last_y::T, current_y::T, x::T) where {T<:Real}
+function interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)
 
 	# calculate the % of Pi related to x between two x points
 	x_pi = (x - last_x)/(current_x - last_x) * π

@@ -1,10 +1,3 @@
-using ParallelPlots
-using Test
-
-using Random
-using JLD
-using DataFrames
-
 include("test_utils.jl")
 
 include("test_argument_errors.jl")

@@ -1,6 +1,7 @@
-using DrWatson
-using DataFrames
-using ParallelPlots
+using DrWatson: display, @unpack, push!, first, Dict, dict_list
+using DataFrames: DataFrame, nrow
+using ParallelPlots: parallelplot
+using CairoMakie: save
 
 function projectile_simulation()
     dicts = prepare_simulation()
@@ -13,8 +14,16 @@ function projectile_simulation()
         total_distance=Float64[],
         time_of_flight=Float64[]
     )
-    for d in dicts
+    dicts_distint = find_minimal_distinct_params(dicts)
+    for d in dicts_distint
         results = exec_simulation(d, results)
+    end
+    results_obs = Observable(results)
+
+    fig = parallelplot(results_obs, curve=true, figure = (size = (1000, 600),))
+    save("projectile_simulation_initial.png", fig)
+    record(fig, "projectile_simulation.mp4", 1:length(dicts), framerate = 1) do t
+        results_obs[] = exec_simulation(dicts[t], results)
     end
     return results
 end
@@ -24,7 +33,6 @@ function prepare_simulation()
     launch_angles = 0:45:90 |> collect
     air_resistances = 0.0:0.5:1.0 |> collect
     gravities = 9.0:0.5:10.0 |> collect
-    display(initial_velocities)
     allparams = Dict(
         "initial_velocities" => initial_velocities,
         "launch_angles" => launch_angles,
@@ -66,6 +74,35 @@ function exec_simulation(d::Dict, results)
     ])
 
     return results
+end
+
+function find_minimal_distinct_params(arr_of_dicts)
+    # Get all unique values for each parameter
+    params = keys(first(arr_of_dicts))
+    param_values = Dict(
+        param => unique([Float64(d[param]) for d in arr_of_dicts])  # Ensure all values are Float64
+        for param in params
+    )
+
+    # Only two different values for each parameter
+    minimal_values = Dict(
+        param => param_values[param][1:min(2, length(param_values[param]))]
+        for param in params
+    )
+
+    # Create minimal set with proper types
+    result = Vector{Dict{String, Float64}}()  # Specify the exact type of the result
+    push!(result, Dict(param => minimal_values[param][1] for param in params))
+
+    for param in params
+        if length(minimal_values[param]) > 1
+            new_dict = copy(result[1])  # Copy the base dict
+            new_dict[param] = minimal_values[param][2]  # Set the second value for the current parameter
+            push!(result, new_dict)
+        end
+    end
+
+    return result
 end
 
 # Main execution
