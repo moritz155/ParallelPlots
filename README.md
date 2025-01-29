@@ -10,9 +10,7 @@ This Project is for the TU-Berlin Course "Julia Programming for Machine Learning
 Please make sure, that Julia `1.10` is used!
 
 This Module will return you a nice Scene you can use to display your Data with [Parallel Coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates)<br>
-<img src="test/projectile_simulation.png" width="300" />
-
-_This Module was created with PkgTemplates.jl_
+<img src="test/projectile_simulation.png" width="500" />
 
 ## Getting Started
 
@@ -30,7 +28,6 @@ using ParallelPlots
 
 | Parameter         | Default  | Example                            | Description                                                                                                            |
 |-------------------|----------|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| normalize::Bool   | false    | normalize=true                     | If the Data should be normalized (min/max)                                                                             |
 | title::String     | ""       | title="My Title"                   | The Title of The Figure,                                                                                               |
 | colormap          | :viridis | colormap=:thermal                  | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                              |
 | color_feature     | nothing  | color_feature="weight"             | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used |
@@ -44,10 +41,6 @@ using ParallelPlots
 ```
 julia> using ParallelPlots
 julia> parallelplot(DataFrame(height=160:180,weight=60:80,age=20:40))
-```
-```
-# If you want to normalize the Data, you can add the value normalized=true, default is false
-julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
 ```
 ```
 # If you want to set the size of the plot (default width:800, height:600)
@@ -69,7 +62,7 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), f
 ```
 # Adjust Color and and feature
 parallelplot(df,
-		# You choose which axis/feature should be in charge for the coloring
+        # You choose which axis/feature should be in charge for the coloring
         color_feature="weight",
         # you can as well select, which Axis should be shown
         feature_selection=["height","age","income"],
@@ -83,8 +76,6 @@ parallelplot(df,
         show_color_legend = true
     )
 ```
-
-Please read the [Docs](/docs/build/index.html) for further Information
 
 ### Working on ParallelPlots / Cheatsheet
 1. Using ParallelPlots
