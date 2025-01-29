@@ -5,16 +5,6 @@ using DataFrames: DataFrame, names, eachcol, size, minimum, maximum
 
 
 
-function normalize_DF(data::DataFrame)
-	for col in names(data)
-		data[!, col] = (data[!, col] .- minimum(data[!, col])) ./
-					   (maximum(data[!, col]) - minimum(data[!, col]))
-	end
-
-	return data
-end
-
-
 function input_data_check(data::DataFrame)
 	if isnothing(data)
 		throw(ArgumentError("Data cannot be nothing"))
@@ -36,14 +26,13 @@ end
 
 # Constructors
 ```julia
-ParallelPlot(data::DataFrame; normalize::Bool=false)
+ParallelPlot(data::DataFrame, _Arguments_)
 ```
 
 # Arguments
 
 | Parameter         | Default  | Example                            | Description                                                                                                            |
 |-------------------|----------|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| normalize::Bool   | false    | normalize=true                     | If the Data should be normalized (min/max)                                                                             |
 | title::String     | ""       | title="My Title"                   | The Title of The Figure,                                                                                               |
 | colormap          | :viridis | colormap=:thermal                  | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                              |
 | color_feature     | nothing  | color_feature="weight"             | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used |
@@ -57,9 +46,6 @@ ParallelPlot(data::DataFrame; normalize::Bool=false)
 ```@example
 julia> using ParallelPlots
 julia> parallelplot(DataFrame(height=160:180,weight=60:80,age=20:40))
-
-# If you want to normalize the Data, you can add the value normalized=true, default is false
-julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),normalize=true)
 
 # If you want to set the size of the plot
 julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = (resolution = (300, 300),) )
@@ -95,7 +81,6 @@ parallelplot(df,
 @recipe(ParallelPlot, df) do scene
 	Attributes(
 		# additional attributes
-		normalize = false,
 		title = "", # Title of the Figure
 		colormap = :viridis,  # https://docs.makie.org/dev/explanations/colors
 		color_feature = nothing,    # Which feature to use for coloring (column name)
@@ -116,11 +101,6 @@ function Makie.plot!(pp::ParallelPlot)
 
 		# check the given DataFrame
 		input_data_check(data)
-
-		# Normalize the data if required
-		if pp.normalize[]
-			data = normalize_DF(data)
-		end
 
 		# Get the Fig and empty it, so its nice and clean for the next itaration
 		fig = current_figure()
@@ -237,7 +217,7 @@ function Makie.plot!(pp::ParallelPlot)
 	# add listener to Observable Arguments and trigger an update on change
 	# loop thorough the given Arguments
 	for kw in pp.kw
-		# e.g. normalize
+		# e.g. curve
 		attribute_key = kw[1]
 		on(pp[attribute_key]) do x
 			# trigger update

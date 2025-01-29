@@ -5,13 +5,12 @@ using Test: @testset
 @testset "Use a Observable DataFrame" begin
 
     # create the Data
-    df_observable = Observable(create_person_df(2))
+    df_observable = Observable(create_person_df(3))
     title_observable = Observable("")
-    normalize_observable = Observable(true)
     curve_observable = Observable(true)
 
     # create the Plot
-    fig, ax, sc = parallelplot(df_observable, normalize=normalize_observable, title=title_observable, curve = curve_observable)
+    fig, ax, sc = parallelplot(df_observable, title=title_observable, curve = curve_observable)
     save("pcp_initialized.png", fig)
 
     # we can change a parameter and the graph will be automaticly changed
@@ -24,15 +23,13 @@ using Test: @testset
 
         # Update Dataframe
         if(iseven(t))
-            normalize_observable[] = false
             curve_observable[] = false
             title_observable[] = ""
             df_observable[] = create_person_df(5)
         else
-            normalize_observable[] = true
             curve_observable[] = true
-            title_observable[] = "Normalize"
-            df_observable[] = create_car_df(t)
+            title_observable[] = "Curved"
+            df_observable[] = create_car_df(t+1)
         end
 
 
