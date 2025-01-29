@@ -4,7 +4,19 @@ using CairoMakie: Makie, Axis, Colorbar, Point2f, Point2, text!, lines!, empty!,
 using DataFrames: DataFrame, names, eachcol, size, minimum, maximum
 
 
+"""
 
+	input_data_check(data::DataFrame)
+
+checks the Input Data if the size is correct and no missing values are available
+
+### Input:
+- DataFrame
+### Output:
+- none
+### Trows
+Throws error on wrong DF
+"""
 function input_data_check(data::DataFrame)
 	if isnothing(data)
 		throw(ArgumentError("Data cannot be nothing"))
@@ -24,16 +36,14 @@ end
 
 """
 
-# Constructors
-```julia
-ParallelPlot(data::DataFrame, _Arguments_)
-```
+	parallelplot(data::DataFrame, _Arguments_)
+
 
 # Arguments
 
 | Parameter         | Default  | Example                            | Description                                                                                                            |
 |-------------------|----------|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| title::String     | ""       | title="My Title"                   | The Title of The Figure,                                                                                               |
+| title			    | ""       | title="My Title"                   | The Title of The Figure,                                                                                               |
 | colormap          | :viridis | colormap=:thermal                  | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                              |
 | color_feature     | nothing  | color_feature="weight"             | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used |
 | feature_labels    | nothing  | feature_labels=["Weight","Age"]    | Add your own Axis labels, just use the exact amount of labes as you have axis                                          |
@@ -56,17 +66,21 @@ CairoMakie.Screen{IMAGE}
 ```@example
 # If you want to set the size of the plot
 julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = (resolution = (300, 300),) )
-
+```
+```
 # You can update as well the Graph with Observables
 julia> df_observable = Observable(DataFrame(height=160:180,weight=60:80,age=20:40))
 julia> fig, ax, sc = parallelplot(df_observable)
-
+```
+```
 # If you want to add a Title for the Figure, sure you can!
 julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),title="My Title")
-
+```
+```
 # If you want to specify the axis labels, make sure to use the same number of labels as you have axis!
 julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), feature_labels=["Height","Weight","Age"])
-
+```
+```
 # Adjust Color and and feature
 parallelplot(df,
 		# You choose which axis/feature should be in charge for the coloring
@@ -243,6 +257,19 @@ function Makie.plot!(pp::ParallelPlot)
 	pp
 end
 
+
+"""
+
+	get_color_col(pp::ParallelPlot, data::DataFrame) :: AbstractString
+
+get the name of the Column, on which the Color should be dependent
+
+### Input:
+- pp::ParallelPlot
+- data::DataFrame
+### Output:
+- AbstractString
+"""
 function get_color_col(pp::ParallelPlot, data::DataFrame) :: AbstractString
 	color_col = if isnothing(pp.color_feature[])  # check if colorFeature is set
 			# Its not Set, use the last feature
@@ -263,7 +290,21 @@ function get_color_col(pp::ParallelPlot, data::DataFrame) :: AbstractString
 	return color_col
 end
 
-# Calculates the Color for the colorfeature
+"""
+
+	calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractString, Vector{Real}, Real, Real}
+
+Calculates the Color values for the Lines
+
+### Input:
+- pp::ParallelPlot
+- data::DataFrame
+### Output:
+- color_col  	result of `get_color_col`
+- color_values 	The List of Values of the `color_col`. Needed to calculate the Color for each Line
+- color_min 	The min value of `color_values`. To Calculate the ColorRange
+- color_max 	The max value of `color_values`. To Calculate the ColorRange
+"""
 function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractString, Vector{Real}, Real, Real}
 	color_col = get_color_col(pp, data)
     color_values = data[:,color_col]  # Get all values for selected feature
@@ -274,9 +315,17 @@ function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractStr
 
 end
 
-# COLOR FEATURE
-# If set, use the setted value
-# Show, when color_feature is not in feature_selection
+"""
+
+	show_color_legend!(pp) :: Bool
+
+Returns Boolean if the Color Legend/Bar on the right should be shown
+
+### Input:
+- pp::ParallelPlot
+### Output:
+- boolean if `show_color_legend` from the Arguments is set, return this value. Else show, when color_feature is not in feature_selection
+"""
 function show_color_legend!(pp) :: Bool
 	if pp.show_color_legend[] == true
 		return true
@@ -289,7 +338,29 @@ function show_color_legend!(pp) :: Bool
 	end
 end
 
-# Draw lines connecting points for each row
+
+"""
+
+	draw_lines(
+		scene,
+		pp,
+		data,
+		width::Number,
+		height::Number,
+		offset::Number,
+		limits,
+		numberFeatures::Number,
+		sampleSize::Number,
+		parsed_data,
+		color_values,
+		color_min,
+		color_max
+	)
+
+Function to Draw the Lines connecting the Values on each Axis into the Plot
+
+
+"""
 function draw_lines(
     scene,
 	pp,
@@ -409,30 +480,38 @@ function draw_axis(
 end
 
 
-# Creates an Axis on top of each feature/axis
+"""
+
+	axis_title!(
+		scene,
+		endpoints::Observable,
+		title::String;
+		titlegap = Observable(4.0f0),
+	)
+
+This Function will create the Axis Label for a Axis
+
+"""
 function axis_title!(
-    topscene,
+    scene,
     endpoints::Observable,
     title::String;
     titlegap = Observable(4.0f0),
 )
+	# calculate the Position
     titlepos = lift(endpoints, titlegap) do a, titlegap
         x = a[1][1]
         y = a[2][2] + titlegap
         Point2(x, y)
     end
 
-    titlet = text!(
-        topscene,
+	# create the Title
+    text!(
+        scene,
         title,
         position = titlepos,
-        #visible =
-        #fontsize =
         align = (:center, :bottom),
-        #font =
-        #color =
         space = :data,
-        #show_axis=false,
         inspectable = false,
     )
 end
@@ -444,7 +523,7 @@ end
 Interpolates the Y Value between the given current/last(x/y) point with the given x value.
 
 ### Input:
-- Old and New Coordinate (x/y Value)
+- old and New Coordinate (x/y Value)
 - current x Value
 ### Output:
 - current, interpolated y Value

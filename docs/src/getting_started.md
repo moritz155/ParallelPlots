@@ -2,16 +2,16 @@
 # Getting Started
 
 ## Install Dependencies & Use ParallelPlots
-## Script/REPL
+### Script/REPL
 `Pkg> add https://github.com/moritz155/ParallelPlots`
-## Notebook
+### Notebook
 ```
 using Pkg
 Pkg.add(url="https://github.com/moritz155/ParallelPlots")
 using ParallelPlots
 ```
 ## Usage
-## Available Parameter
+### Available Parameter
 
 | Parameter         | Default  | Example                            | Description                                                                                                            |
 |-------------------|----------|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
@@ -24,7 +24,7 @@ using ParallelPlots
 | show_color_legend | nothing  | show_color_legend=true             | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automaticly                |
 
 
-## Examples
+### Examples
 ```
 julia> using ParallelPlots
 julia> parallelplot(DataFrame(height=160:180,weight=60:80,age=20:40))
@@ -82,10 +82,6 @@ parallelplot(df,
     * Precompile
         - `(ParallelPlots) pkg>precompile`
 
-
-## Create Docs
-* move to `./docs` folder with command line
-* run `julia --project make.jl`
 
 
 

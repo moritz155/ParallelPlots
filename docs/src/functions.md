@@ -7,9 +7,10 @@ Modules = [ParallelPlots]
 Private = false
 Order = [:function, :type]
 ```
+
+## Internal API
 ```@index
 ```
-## Internal API
 ```@autodocs
 Modules = [ParallelPlots]
 Public = false
