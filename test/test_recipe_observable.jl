@@ -5,7 +5,7 @@ using Test: @testset
 @testset "Use a Observable DataFrame" begin
 
     # create the Data
-    df_observable = Observable(create_person_df(2))
+    df_observable = Observable(create_person_df(3))
     title_observable = Observable("")
     curve_observable = Observable(true)
 
@@ -29,7 +29,7 @@ using Test: @testset
         else
             curve_observable[] = true
             title_observable[] = "Curved"
-            df_observable[] = create_car_df(t)
+            df_observable[] = create_car_df(t+1)
         end
 
 
