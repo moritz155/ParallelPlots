@@ -1,5 +1,4 @@
-```@index
-```
+
 
 ## Public API
 
@@ -8,7 +7,8 @@ Modules = [ParallelPlots]
 Private = false
 Order = [:function, :type]
 ```
-
+```@index
+```
 ## Internal API
 ```@autodocs
 Modules = [ParallelPlots]
