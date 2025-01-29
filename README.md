@@ -9,7 +9,7 @@
 This Project is for the TU-Berlin Course "Julia Programming for Machine Learning"<br>
 Please make sure, that Julia `1.10` is used!
 
-This Module will return you a nice Scene you can use to display your Data with [Parallel Coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates)<br>
+This Module will return you a nice Makie Plot you can use to display your Data with [Parallel Coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates)<br>
 <img src="test/projectile_simulation.png" width="500" />
 
 ## Getting Started
