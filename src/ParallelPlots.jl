@@ -46,8 +46,11 @@ ParallelPlot(data::DataFrame, _Arguments_)
 ```jldoctest
 julia> using DataFrames
 
-julia> parallelplot(DataFrame(height=160:180,weight=60:80,age=20:40))
+julia> fig, ax, sc = parallelplot(DataFrame(height=160:180,weight=60:80,age=20:40))
 FigureAxisPlot()
+
+julia> display(fig)
+CairoMakie.Screen{IMAGE}
 ```
 
 ```@example

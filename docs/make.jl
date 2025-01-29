@@ -3,7 +3,7 @@ using Documenter
 using DataFrames
 
 DocMeta.setdocmeta!(ParallelPlots, :DocTestSetup, :(using ParallelPlots); recursive=true)
-DocMeta.setdocmeta!(DataFrames, :DocTestSetup, :(using DataFrames); recursive=true)
+#DocMeta.setdocmeta!(DataFrames, :DocTestSetup, :(using DataFrames); recursive=true)
 
 makedocs(;
     modules=[ParallelPlots],
