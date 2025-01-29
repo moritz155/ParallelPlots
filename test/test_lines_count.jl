@@ -1,5 +1,6 @@
 using ParallelPlots: parallelplot
-using Test: @test
+using Test: @test, @testset
+using DataFrames: size
 
 @testset "Lines Count" begin
     df=create_person_df()

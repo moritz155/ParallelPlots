@@ -1,5 +1,6 @@
 using ParallelPlots: parallelplot
 using Test: @testset, @test, @test_throws
+using CairoMakie: save
 
 @testset "call with color feature Axis" begin
 

@@ -1,8 +1,6 @@
 using ParallelPlots: parallelplot
-using CairoMakie:Observable, record # for Record Video
+using CairoMakie:Observable, record, save # for Record Video
 using Test: @testset
-
-using DataFrames
 
 @testset "Use a Observable DataFrame" begin
 
