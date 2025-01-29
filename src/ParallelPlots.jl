@@ -43,10 +43,14 @@ ParallelPlot(data::DataFrame, _Arguments_)
 
 
 # Examples
-```@example
-julia> using ParallelPlots
-julia> parallelplot(DataFrame(height=160:180,weight=60:80,age=20:40))
+```jldoctest
+julia> using DataFrames
 
+julia> parallelplot(DataFrame(height=160:180,weight=60:80,age=20:40))
+FigureAxisPlot()
+```
+
+```@example
 # If you want to set the size of the plot
 julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = (resolution = (300, 300),) )
 
@@ -344,25 +348,18 @@ function draw_lines(
 end
 
 """
-    bounds(itp::AbstractInterpolation)
+    draw_axis(
+		scene,
+		width::Number,
+		height::Number,
+		offset::Number,
+		limits,
+		labels,
+		numberFeatures::Number,
+	)
 
-Return the `bounds` of the domain of `itp` as a tuple of `(min, max)` pairs for each coordinate. This is best explained by example:
+Draws the Axis/Feature vertical Axis Lines on the given Scene
 
-```jldoctest
-julia> itp = interpolate([1 2 3; 4 5 6], BSpline(Linear()));
-
-julia> bounds(itp)
-((1, 2), (1, 3))
-
-julia> data = 1:3;
-
-julia> knots = ([10, 11, 13.5],);
-
-julia> itp = interpolate(knots, data, Gridded(Linear()));
-
-julia> bounds(itp)
-((10.0, 13.5),)
-```
 """
 function draw_axis(
     scene,
@@ -437,9 +434,18 @@ function axis_title!(
     )
 end
 
-# Interpolates between the x and y point
-# Inputs a x value
-# Outputs a y value
+
+"""
+    interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)
+
+Interpolates the Y Value between the given current/last(x/y) point with the given x value.
+
+### Input:
+- Old and New Coordinate (x/y Value)
+- current x Value
+### Output:
+- current, interpolated y Value
+"""
 function interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)
 
 	# calculate the % of Pi related to x between two x points
