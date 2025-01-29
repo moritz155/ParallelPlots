@@ -1,5 +1,6 @@
 using ParallelPlots: parallelplot
 using Test: @testset, @test
+using CairoMakie: save
 
 @testset "call with normalize" begin
 

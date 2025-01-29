@@ -1,7 +1,6 @@
 using ParallelPlots: parallelplot
-using Test: @test
-
-using DataFrames
+using Test: @test, @testset
+using CairoMakie: save
 
 @testset "default call" begin
 

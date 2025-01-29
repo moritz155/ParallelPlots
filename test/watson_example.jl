@@ -1,5 +1,5 @@
 using DrWatson: display, @unpack, push!, first, Dict, dict_list
-using DataFrames: DataFrame, nrow
+using DataFrames: nrow
 using ParallelPlots: parallelplot
 using CairoMakie: save, Observable, record
 

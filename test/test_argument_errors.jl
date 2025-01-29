@@ -1,6 +1,7 @@
 using ParallelPlots: parallelplot
 using Test: @testset, @test_throws 
 using DataFrames: DataFrame
+using CairoMakie: save
 
 @testset "ArgumentError Tests" begin
     df_missing = DataFrame(Name=["Alice", "Bob", "Charlie"],
