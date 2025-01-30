@@ -59,13 +59,52 @@ FigureAxisPlot()
 julia> display(fig)
 CairoMakie.Screen{IMAGE}
 ```
+Using DrWatson with ParallelPlot
+```jldoctest
+julia> using DataFrames, DrWatson, ParallelPlots
+
+julia> function exec_simulation(d::Dict, results)
+           @unpack launch_angles, initial_velocities = d
+           max_height = initial_velocities * launch_angles
+           push!(results, [
+               initial_velocities,
+               launch_angles,
+               max_height,
+           ])
+           return results
+       end;
+
+julia> initial_velocities = [40.0, 50.0];
+
+julia> launch_angles = [30.0, 60.0];
+
+julia> allparams = Dict(
+           "initial_velocities" => initial_velocities,
+           "launch_angles" => launch_angles,
+       );
+
+julia> dicts = dict_list(allparams);
+
+julia> results = DataFrame(
+           initial_velocity=Float64[],
+           launch_angle=Float64[],
+           max_height=Float64[],
+       );
+
+julia> for d in dicts
+           results = exec_simulation(d, results)
+       end;
+
+julia> fig = parallelplot(results, curve=true, figure = (size = (1000, 600),));
+
+julia> display(fig);
 
 ```@example
 # If you want to set the size of the plot
 julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = (resolution = (300, 300),) )
 ```
 ```
-# You can update as well the Graph with Observables
+# You can update the Graph with Observables as well 
 julia> df_observable = Observable(DataFrame(height=160:180,weight=60:80,age=20:40))
 julia> fig, ax, sc = parallelplot(df_observable)
 ```
@@ -78,7 +117,7 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),ti
 julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), feature_labels=["Height","Weight","Age"])
 ```
 ```
-# Adjust Color and and feature
+# Adjust Color and and Feature
 parallelplot(df,
 		# You choose which axis/feature should be in charge for the coloring
         color_feature="weight",
