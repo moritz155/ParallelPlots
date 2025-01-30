@@ -25,4 +25,7 @@ using CairoMakie: save
     @test_throws ArgumentError begin
         parallelplot(df_one_line)
     end
+    @test_throws ArgumentError begin
+        parallelplot(nothing)
+    end
 end
