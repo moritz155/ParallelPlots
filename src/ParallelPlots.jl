@@ -369,7 +369,9 @@ function show_color_legend!(pp) :: Bool
 		return true
 	elseif pp.show_color_legend[] == false
 		return false
-	elseif !isnothing(pp.feature_selection[]) && !(pp.color_feature[] in pp.feature_selection[]) #TODO: when only feature_selection is set, the graph will be shown.
+	elseif isnothing(pp.color_feature[])
+		return false
+	elseif !isnothing(pp.feature_selection[]) && !(pp.color_feature[] in pp.feature_selection[])
 		return true
 	else
 		return false
