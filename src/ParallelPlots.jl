@@ -17,7 +17,7 @@ checks the Input Data if the size is correct and no missing values are available
 ### Trows
 Throws error on wrong DF
 """
-function input_data_check(data::DataFrame)
+function input_data_check(data::DataFrame)::Nothing
 	if isnothing(data)
 		throw(ArgumentError("Data cannot be nothing"))
 	end
@@ -306,10 +306,10 @@ Calculates the Color values for the Lines
 - color_max 	The max value of `color_values`. To Calculate the ColorRange
 """
 function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractString, Vector{Real}, Real, Real}
-	color_col = get_color_col(pp, data)
-    color_values = data[:,color_col]  # Get all values for selected feature
-    color_min = minimum(color_values)
-    color_max = maximum(color_values)
+	color_col:: AbstractString = get_color_col(pp, data)
+    color_values::Vector{Real} = data[:,color_col]  # Get all values for selected feature
+    color_min::Real = minimum(color_values)
+    color_max::Real = maximum(color_values)
 
 	return color_col, color_values, color_min, color_max
 
@@ -377,6 +377,7 @@ function draw_lines(
 	color_max
 	)
 	for i in 1:sampleSize
+		dataPoints = Vector{Point2f}(undef, numberFeatures)
 		# If Curved, Interpolate
 		if(pp.curve[] == false)
     		# calcuating the point respectivly of the width and height in the Screen
@@ -518,7 +519,7 @@ end
 
 
 """
-    interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)
+    interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)::Float64
 
 Interpolates the Y Value between the given current/last(x/y) point with the given x value.
 
@@ -528,7 +529,7 @@ Interpolates the Y Value between the given current/last(x/y) point with the give
 ### Output:
 - current, interpolated y Value
 """
-function interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)
+function interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)::Float64
 
 	# calculate the % of Pi related to x between two x points
 	x_pi = (x - last_x)/(current_x - last_x) * π
