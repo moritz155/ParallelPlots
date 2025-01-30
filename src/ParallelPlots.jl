@@ -117,6 +117,10 @@ function Makie.plot!(pp::ParallelPlot)
 	# whenever df_observable change
 	function update_plot(data)
 
+		if isnothing(data)
+			throw(ArgumentError("Data cannot be nothing"))
+		end
+
 		# check the given DataFrame
 		input_data_check(data)
 
