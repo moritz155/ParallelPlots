@@ -98,7 +98,7 @@ julia> for d in dicts
 julia> fig = parallelplot(results, curve=true, figure = (size = (1000, 600),));
 
 julia> display(fig);
-
+```
 ```@example
 # If you want to set the size of the plot
 julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = (resolution = (300, 300),) )
