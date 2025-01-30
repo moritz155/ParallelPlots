@@ -41,15 +41,16 @@ end
 
 # Arguments
 
-| Parameter         | Default  | Example                            | Description                                                                                                            |
-|-------------------|----------|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| title			    | ""       | title="My Title"                   | The Title of The Figure,                                                                                               |
-| colormap          | :viridis | colormap=:thermal                  | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                              |
-| color_feature     | nothing  | color_feature="weight"             | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used |
-| feature_labels    | nothing  | feature_labels=["Weight","Age"]    | Add your own Axis labels, just use the exact amount of labes as you have axis                                          |
-| feature_selection | nothing  | feature_selection=["weight","age"] | Select, which features should be Displayed. If color_feature is not in this List, use the last one                     |
-| curve             | false    | curve=true                         | Show the Lines Curved                                                                                                  |
-| show_color_legend | nothing  | show_color_legend=true             | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automaticly                |
+| Parameter         | Default  | Example                            | Description                                                                                                                |
+|-------------------|----------|------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| title::String     | ""       | title="My Title"                   | The Title of The Figure,                                                                                                   |
+| colormap          | :viridis | colormap=:thermal                  | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                                  |
+| color_feature     | nothing  | color_feature="weight"             | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used     |
+| feature_labels    | nothing  | feature_labels=["Weight","Age"]    | Add your own Axis labels, just use the exact amount of labes as you have axis                                              |
+| feature_selection | nothing  | feature_selection=["weight","age"] | Select, which features should be Displayed. If color_feature is not in this List, use the last one                         |
+| curve             | false    | curve=true                         | Show the Lines Curved                                                                                                      |
+| show_color_legend | nothing  | show_color_legend=true             | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automaticly                    |
+| scale             | nothing  | scale=[log2, identity, log10]      | Choose, how each Axis should be scaled. In the Example. The first Axis will be log2, the second linear and the third log10 |
 
 
 # Examples
@@ -97,6 +98,13 @@ parallelplot(df,
         show_color_legend = true
     )
 ```
+```
+# Adjust the Axis scale
+parallelplot(df,
+        feature_selection=["height","age","income"],
+        scale=[log2, identity, log10]
+    )
+```
 
 """
 @recipe(ParallelPlot, df) do scene
@@ -109,7 +117,8 @@ parallelplot(df,
 		feature_selection = nothing, # which features should be shown, default: nothing --> show all features
 		curve = false, # If Lines should be curved between the axis. Default false
 		# if colorlegend/ ColorBar should be shown. Default: when color_feature is not visible, true, else false
-		show_color_legend = nothing
+		show_color_legend = nothing,
+		scale = nothing
 	)
 end
 
@@ -192,6 +201,9 @@ function Makie.plot!(pp::ParallelPlot)
 		numberFeatures = length(parsed_data) # Number of features, equivalent to the X Axis
 		sampleSize = size(data, 1)       # Number of samples, equivalent to the Y Axis
 
+		#create the list of scales for each Axis/feature
+		scale_list = create_scale_list(numberFeatures, pp.scale[])
+
 		# # # # # # # # # #
 		# # # L I N E # # #
 		# # # # # # # # # #
@@ -206,6 +218,7 @@ function Makie.plot!(pp::ParallelPlot)
 			offset,
 			limits,
 			numberFeatures,
+			scale_list,
 			sampleSize,
 			parsed_data,
 			color_values,
@@ -226,7 +239,8 @@ function Makie.plot!(pp::ParallelPlot)
 			offset,
 			limits,
 			labels,
-			numberFeatures
+			numberFeatures,
+			scale_list
 		)
 
 
@@ -257,6 +271,30 @@ function Makie.plot!(pp::ParallelPlot)
 	pp
 end
 
+"""
+
+	create_scale_list(numberFeatures :: Number, scale_list)
+
+check the length of the given scale Attribute. Throws an Error if the Length does not match the amount of axis/features
+If scale is not set, identity, so linear will be used for all axis.
+if the length of the scale attribute does not fit, an assert error will be thrown
+
+### Input:
+- numberFeatures::Number
+- scale_list 	nothing or Vector e.g. [log2, log10, identity]
+### Output:
+- given scale_list or vector of [identity, identity, ...] with the length of axis/features
+### Throws
+Assertion, if amount of scales in the scale list does not match the amount of axis/features
+"""
+function create_scale_list(numberFeatures :: Number, scale_list)
+    if isnothing(scale_list)
+    	[identity for i = 1:numberFeatures]
+	else
+		@assert length(scale_list) === numberFeatures "The Number of given scales ("*string(length(scale_list))*") does not match the amount of axis/features ("*string(numberFeatures)*")"
+		return scale_list
+	end
+end
 
 """
 
@@ -331,7 +369,7 @@ function show_color_legend!(pp) :: Bool
 		return true
 	elseif pp.show_color_legend[] == false
 		return false
-	elseif !isnothing(pp.feature_selection[]) && !(pp.color_feature[] in pp.feature_selection[])
+	elseif !isnothing(pp.feature_selection[]) && !(pp.color_feature[] in pp.feature_selection[]) #TODO: when only feature_selection is set, the graph will be shown.
 		return true
 	else
 		return false
@@ -350,6 +388,7 @@ end
 		offset::Number,
 		limits,
 		numberFeatures::Number,
+		scale_list,
 		sampleSize::Number,
 		parsed_data,
 		color_values,
@@ -370,6 +409,7 @@ function draw_lines(
 	offset::Number,
 	limits,
 	numberFeatures::Number,
+	scale_list,
 	sampleSize::Number,
 	parsed_data,
 	color_values,
@@ -385,7 +425,7 @@ function draw_lines(
 					# calculates which feature the Point should be on
 					offset + (j - 1) / (numberFeatures - 1) * width,
 					# calculates the Y axis value
-					(parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset,
+					calc_y_coordinate(parsed_data, limits, height,offset, j, i, scale_list),
 				)
 				# iterates through the Features/Axis and creates for each feature the samplePoint (above)
 				for j in 1:numberFeatures
@@ -399,9 +439,9 @@ function draw_lines(
 			for j in 2:numberFeatures
 				last_x = offset + ((j-1) - 1) / (numberFeatures - 1) * width
 				current_x = offset + ((j) - 1) / (numberFeatures - 1) * width
-					last_y = (parsed_data[j-1][i] - limits[j-1][1]) / (limits[j-1][2] - limits[j-1][1]) * height + offset
-				current_y = (parsed_data[j][i] - limits[j][1]) / (limits[j][2] - limits[j][1]) * height + offset
-					# interpolate points between the current and the last point
+				last_y = calc_y_coordinate(parsed_data, limits, height, offset, j-1, i, scale_list)
+				current_y = calc_y_coordinate(parsed_data, limits, height,offset, j, i, scale_list)
+				# interpolate points between the current and the last point
 				for x in range(last_x, current_x, step = ( (current_x-last_x) / 30 ) )
 					# calculate the interpolated Y Value
 					y = interpolate(last_x, current_x, last_y, current_y, x)
@@ -422,6 +462,71 @@ function draw_lines(
 end
 
 """
+    calc_y_coordinate(parsed_data, limits, height, offset, feature_index :: Number, sample_index :: Number, scale_list) :: Number
+
+This function will return the y position in the scene, depending of the scale if set
+
+### Output:
+- the y position of the datapoint in the scene
+"""
+function calc_y_coordinate(parsed_data, limits, height, offset, feature_index :: Number, sample_index :: Number, scale_list) :: Number
+
+	# linear factor between 0 and 1, depending on the value inside the feature
+	factor = (
+				(parsed_data[feature_index][sample_index] - limits[feature_index][1])
+				/
+				(limits[feature_index][2] - limits[feature_index][1])
+			)
+
+	# get the scale of the current feature
+	scale = scale_list[feature_index]
+
+	# change the linear factor - when needed - with the equivalent function for a log distribution
+	# throws error when cscalijg parameter is not one of [identity, log2, log10]
+	if scale === identity
+	elseif scale === log2
+		factor = log_scale2(factor)
+	elseif scale === log10
+		factor = log_scale10(factor)
+	else
+		throw(ArgumentError("The scaling parameter '"*string(scale)*"' is currently not supported. Supported: [identity, log2, log10]"))
+	end
+
+	# return the y position. use the height depending on the factor (full/no height)
+	return factor * height + offset
+end
+
+"""
+    log_scale10(x::Float64)
+
+In Linear Axis represenatation, values between 0-1 are linear distributed.
+Due to the Logarithmfunction, we need to distribute the values with the given log values to match the axis
+
+### Input:
+- value x, distributed between 0 and 1
+### Output:
+- the log10 distribution, beween 0 and 1
+"""
+function log_scale10(x::Float64)
+	return log10(1+99*x)/2
+end
+
+"""
+    log_scale2(x::Float64)
+
+In Linear Axis represenatation, values between 0-1 are linear distributed.
+Due to the Logarithmfunction, we need to distribute the values with the given log values to match the axis
+
+### Input:
+- value x, distributed between 0 and 1
+### Output:
+- the log2 distribution, beween 0 and 1
+"""
+function log_scale2(x::Float64)
+	return log2(1 + 3 * x) / 2
+end
+
+"""
     draw_axis(
 		scene,
 		width::Number,
@@ -430,6 +535,7 @@ end
 		limits,
 		labels,
 		numberFeatures::Number,
+		scale_list
 	)
 
 Draws the Axis/Feature vertical Axis Lines on the given Scene
@@ -443,6 +549,7 @@ function draw_axis(
 	limits,
 	labels,
 	numberFeatures::Number,
+	scale_list
 	)
 	for i in 1:numberFeatures
 		# x will be used to split the Scene for each feature
@@ -467,6 +574,7 @@ function draw_axis(
 			ticklabelfont = def[:yticklabelfont],
 			ticklabelsize = def[:yticklabelsize],
 			minorticks = def[:yminorticks],
+			scale = scale_list[i]
 		)
 
 		# Create Lable for the Axis
