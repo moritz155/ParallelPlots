@@ -2,3 +2,4 @@
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ParallelPlots = "79f8b2c9-78a2-4289-b087-49f7cf65a4c9"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+DrWatson = "634d3b9d-ee7a-5ddf-bec9-22491ea816e1"
