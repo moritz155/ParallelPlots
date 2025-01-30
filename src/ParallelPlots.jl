@@ -18,9 +18,6 @@ checks the Input Data if the size is correct and no missing values are available
 Throws error on wrong DF
 """
 function input_data_check(data::DataFrame)::Nothing
-	if isnothing(data)
-		throw(ArgumentError("Data cannot be nothing"))
-	end
 	if size(data, 2) < 2 # otherwise there will be a nullpointer exception later
 		throw(ArgumentError("Data must have at least two columns, currently ("*string(size(data, 2))*")"))
 	end
@@ -119,6 +116,10 @@ function Makie.plot!(pp::ParallelPlot)
 	# this helper function will update our observables
 	# whenever df_observable change
 	function update_plot(data)
+
+		if isnothing(data)
+			throw(ArgumentError("Data cannot be nothing"))
+		end
 
 		# check the given DataFrame
 		input_data_check(data)
