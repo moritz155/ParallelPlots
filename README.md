@@ -1,6 +1,5 @@
 # ParallelPlots
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://moritz155.github.io/ParallelPlots/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://moritz155.github.io/ParallelPlots/dev/)
 [![Build Status](https://github.com/moritz155/ParallelPlots/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/moritz155/ParallelPlots/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/moritz155/ParallelPlots/branch/main/graph/badge.svg)](https://codecov.io/gh/moritz155/ParallelPlots)
@@ -26,15 +25,16 @@ using ParallelPlots
 ### Usage
 #### Available Parameter
 
-| Parameter         | Default  | Example                            | Description                                                                                                            |
-|-------------------|----------|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| title::String     | ""       | title="My Title"                   | The Title of The Figure,                                                                                               |
-| colormap          | :viridis | colormap=:thermal                  | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                              |
-| color_feature     | nothing  | color_feature="weight"             | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used |
-| feature_labels    | nothing  | feature_labels=["Weight","Age"]    | Add your own Axis labels, just use the exact amount of labes as you have axis                                          |
-| feature_selection | nothing  | feature_selection=["weight","age"] | Select, which features should be Displayed. If color_feature is not in this List, use the last one                     |
-| curve             | false    | curve=true                         | Show the Lines Curved                                                                                                  |
-| show_color_legend | nothing  | show_color_legend=true             | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automaticly                |
+| Parameter         | Default  | Example                            | Description                                                                                                                |
+|-------------------|----------|------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| title::String     | ""       | title="My Title"                   | The Title of The Figure,                                                                                                   |
+| colormap          | :viridis | colormap=:thermal                  | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                                  |
+| color_feature     | nothing  | color_feature="weight"             | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used     |
+| feature_labels    | nothing  | feature_labels=["Weight","Age"]    | Add your own Axis labels, just use the exact amount of labes as you have axis                                              |
+| feature_selection | nothing  | feature_selection=["weight","age"] | Select, which features should be Displayed. If color_feature is not in this List, use the last one                         |
+| curve             | false    | curve=true                         | Show the Lines Curved                                                                                                      |
+| show_color_legend | nothing  | show_color_legend=true             | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automaticly                    |
+| scale             | nothing  | scale=[log2, identity, log10]      | Choose, how each Axis should be scaled. In the Example. The first Axis will be log2, the second linear and the third log10 |
 
 
 #### Examples
@@ -74,6 +74,13 @@ parallelplot(df,
         # If this Attribute is not set,
         # it will only show the ColorBar, when the color feature is not in the selected feature
         show_color_legend = true
+    )
+```
+```
+# Adjust the Axis scale
+parallelplot(df,
+        feature_selection=["height","age","income"],
+        scale=[log2, identity, log10]
     )
 ```
 
