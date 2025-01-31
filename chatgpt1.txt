@@ -1,0 +1,98 @@
+Q:  Please write a julia function that receives an array of dicts and returns a subarray of dicts so that each entry in the array has at least two distinct values
+A:  I've created a function that:
+
+    Takes an array of dictionaries as input
+    Uses filter() with a predicate function
+    For each dictionary, checks if the number of unique values is >= 2 using unique(values(dict))
+    Returns only the dictionaries that meet this criteria
+
+    In the example usage, only the second, third, and fifth dictionaries would be included in the result since they have at least two distinct values.
+    Would you like me to modify the function in any way or add additional functionality?
+    function filter_distinct_values(arr_of_dicts)
+        # Filter the array to keep only dicts with at least 2 distinct values
+        return filter(dict -> length(unique(values(dict))) >= 2, arr_of_dicts)
+    end
+
+    # Example usage:
+    test_array = [
+        Dict("a" => 1, "b" => 1, "c" => 1),        # All same values
+        Dict("a" => 1, "b" => 2, "c" => 1),        # Two distinct values
+        Dict("a" => 1, "b" => 2, "c" => 3),        # Three distinct values
+        Dict("x" => "hello", "y" => "hello"),      # All same values
+        Dict("x" => "hello", "y" => "world"),      # Two distinct values
+    ]
+
+    filtered = filter_distinct_values(test_array)
+Q:  54-element Vector{Dict{String, Real}}:
+    Dict("launch_angles" => 0, "initial_velocities" => 40.0, "gravities" => 9.0, "air_resistances" => 0.0)
+    Dict("launch_angles" => 45, "initial_velocities" => 40.0, "gravities" => 9.0, "air_resistances" => 0.0)
+    Dict("launch_angles" => 90, "initial_velocities" => 40.0, "gravities" => 9.0, "air_resistances" => 0.0)
+    Dict("launch_angles" => 0, "initial_velocities" => 50.0, "gravities" => 9.0, "air_resistances" => 0.0)
+    Dict("launch_angles" => 45, "initial_velocities" => 50.0, "gravities" => 9.0, "air_resistances" => 0.0)
+    Dict("launch_angles" => 90, "initial_velocities" => 50.0, "gravities" => 9.0, "air_resistances" => 0.0)
+    Dict("launch_angles" => 0, "initial_velocities" => 40.0, "gravities" => 9.5, "air_resistances" => 0.0)
+    Dict("launch_angles" => 45, "initial_velocities" => 40.0, "gravities" => 9.5, "air_resistances" => 0.0)
+    Dict("launch_angles" => 90, "initial_velocities" => 40.0, "gravities" => 9.5, "air_resistances" => 0.0)
+    Dict("launch_angles" => 0, "initial_velocities" => 50.0, "gravities" => 9.5, "air_resistances" => 0.0)
+    Dict("launch_angles" => 45, "initial_velocities" => 50.0, "gravities" => 9.5, "air_resistances" => 0.0)
+    Dict("launch_angles" => 90, "initial_velocities" => 50.0, "gravities" => 9.5, "air_resistances" => 0.0)
+    Dict("launch_angles" => 0, "initial_velocities" => 40.0, "gravities" => 10.0, "air_resistances" => 0.0)
+    Dict("launch_angles" => 45, "initial_velocities" => 40.0, "gravities" => 10.0, "air_resistances" => 0.0)
+    Dict("launch_angles" => 90, "initial_velocities" => 40.0, "gravities" => 10.0, "air_resistances" => 0.0)
+    Dict("launch_angles" => 0, "initial_velocities" => 50.0, "gravities" => 10.0, "air_resistances" => 0.0)
+    I want the new dict to have as little entries as possible
+
+A:  Looking at your data, I understand you want to find the minimum set of parameter combinations that still contains at least two distinct values for each parameter. Let me modify the previous function to help with this specific case.
+    This function will return the smallest possible set of dictionaries where:
+
+    Each parameter (launch_angles, initial_velocities, etc.) has at least two different values represented across the set
+    The number of dictionaries is minimized
+
+    For your specific data, it will create:
+
+    One base dictionary with the first value for each parameter
+    One dictionary for each parameter that varies from the base dictionary
+
+    This means you'll get at most n+1 dictionaries (where n is the number of parameters) instead of the original 54 dictionaries, while still maintaining the ability to study the effect of varying each parameter independently.
+    Would you like me to show an example of what the output looks like with your specific data, or would you like any modifications to the function?
+    function find_minimal_distinct_params(arr_of_dicts)
+        # Get all unique values for each parameter
+        params = keys(first(arr_of_dicts))
+        param_values = Dict(
+            param => unique([d[param] for d in arr_of_dicts])
+            for param in params
+        )
+        
+        # For each parameter, we need only two different values
+        minimal_values = Dict(
+            param => param_values[param][1:min(2, length(values))]
+            for (param, values) in param_values
+        )
+        
+        # Create the minimal set of dictionaries
+        result = Dict{String, Real}[]
+        
+        # First dictionary: use first value for each parameter
+        push!(result, Dict(param => values[1] for (param, values) in minimal_values))
+        
+        # Additional dictionaries: change one parameter at a time to its second value
+        for param in params
+            if length(minimal_values[param]) > 1
+                new_dict = copy(result[1])
+                new_dict[param] = minimal_values[param][2]
+                push!(result, new_dict)
+            end
+        end
+        
+        return result
+    end
+
+    # Test with your data
+    test_data = [
+        Dict("launch_angles" => 0, "initial_velocities" => 40.0, "gravities" => 9.0, "air_resistances" => 0.0),
+        Dict("launch_angles" => 45, "initial_velocities" => 40.0, "gravities" => 9.0, "air_resistances" => 0.0),
+        # ... (rest of your data)
+    ]
+
+    minimal_set = find_minimal_distinct_params(test_data)
+
