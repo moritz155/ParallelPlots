@@ -8,9 +8,10 @@
 This Project is for the TU-Berlin Course "Julia Programming for Machine Learning"<br>
 Please make sure, that Julia `1.10` is used!
 
-This Module will return you a nice Makie Plot you can use to display your Data with [Parallel Coordinates](https://en.wikipedia.org/wiki/Parallel_coordinates)<br>
+This Module will return a nice Makie Plot you can use to display your Data using a [Parallel Coordinate Plot](https://en.wikipedia.org/wiki/Parallel_coordinates)<br>. 
 <img src="test/projectile_simulation.png" width="500" />
 
+The package is heavily based on [Makie](https://docs.makie.org/). This is a data visualization tool that can be used to display various plots such as interactive 3d plots, static vector graphics or plots in a browser. Makie offers four backends that can be chosen from. This project uses [CairoMakie](https://docs.makie.org/stable/explanations/backends/cairomakie#CairoMakie) which is good for plotting vector graphics. 
 ## Getting Started
 
 ### Install Dependencies & Use ParallelPlots
@@ -23,18 +24,19 @@ Pkg.add(url="https://github.com/moritz155/ParallelPlots")
 using ParallelPlots
 ```
 ### Usage
+The plot can be customized in many ways. For that, parameters with the according values have to be passed along with the function call. Examples for function calls are depicted below.
 #### Available Parameter
 
 | Parameter         | Default  | Example                                  | Description                                                                                                            |
 |-------------------|----------|------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| title::String     | ""       | title="My Title"                         | The Title of The Figure,                                                                                               |
+| title::String     | ""       | title="My Title"                         | The Title of the Figure,                                                                                               |
 | colormap          | :viridis | colormap=:thermal                        | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                              |
-| color_feature     | nothing  | color_feature="weight"                   | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used |
-| feature_labels    | nothing  | feature_labels=["Weight","Age"]          | Add your own Axis labels, just use the exact amount of labes as you have axis                                          |
-| feature_selection | nothing  | feature_selection=["weight","age"]       | Select, which features should be Displayed. If color_feature is not in this List, use the last one                     |
-| curve             | false    | curve=true                               | Show the Lines Curved                                                                                                  |
-| show_color_legend | nothing  | show_color_legend=true                   | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automaticly                |
-| scale             | nothing  | scale=[identity, log, log2, log10, sqrt] | Choose, how each Axis should be scaled.                                                                                |
+| color_feature     | nothing  | color_feature="weight"                   | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used. |
+| feature_labels    | nothing  | feature_labels=["Weight","Age"]          | Add your own Axis labels, just make sure to use the exact amount of labels you have                                          |
+| feature_selection | nothing  | feature_selection=["weight","age"]       | Select which features should be Displayed. If color_feature is not in this List, use the last one                     |
+| curve             | false    | curve=true                               | Either curved edges or sharp edges                                                                                                  |
+| show_color_legend | nothing  | show_color_legend=true                   | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automatically                |
+| scale             | nothing  | scale=[identity, log, log2, log10, sqrt] | Choose the scale of the axis. There must be one for each Y-axis.                                                                                  |
 
 
 #### Examples
