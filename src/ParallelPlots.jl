@@ -521,18 +521,12 @@ function calc_y_coordinate(parsed_data, limits, height, offset, feature_index ::
 	scale = scale_list[feature_index]
 
 	# create a factor with the equivalent function for a log/identity distribution
-	# throws error when scaling parameter is not one of [identity, log2, log10]
-	if scale in [identity, log, log2, log10, sqrt]
-		factor = calc_factor(
-			limits[feature_index][1],
-			limits[feature_index][2],
-			parsed_data[feature_index][sample_index],
-			scale
-		)
-	else
-		throw(ArgumentError("The scaling parameter '"*string(scale)*"' is currently not supported.
-			Supported: [identity, log, log2, log10, sqrt]"))
-	end
+	factor = calc_factor(
+		limits[feature_index][1],
+		limits[feature_index][2],
+		parsed_data[feature_index][sample_index],
+		scale
+	)
 
 	# return the y position. use the height depending on the factor (full/no height)
 	return factor * height + offset
