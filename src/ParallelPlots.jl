@@ -38,16 +38,16 @@ end
 
 # Arguments
 
-| Parameter         | Default  | Example                            | Description                                                                                                                |
-|-------------------|----------|------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| title::String     | ""       | title="My Title"                   | The Title of The Figure,                                                                                                   |
-| colormap          | :viridis | colormap=:thermal                  | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                                  |
-| color_feature     | nothing  | color_feature="weight"             | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used     |
-| feature_labels    | nothing  | feature_labels=["Weight","Age"]    | Add your own Axis labels, just use the exact amount of labes as you have axis                                              |
-| feature_selection | nothing  | feature_selection=["weight","age"] | Select, which features should be Displayed. If color_feature is not in this List, use the last one                         |
-| curve             | false    | curve=true                         | Show the Lines Curved                                                                                                      |
-| show_color_legend | nothing  | show_color_legend=true             | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automaticly                    |
-| scale             | nothing  | scale=[log2, identity, log10]      | Choose, how each Axis should be scaled. In the Example. The first Axis will be log2, the second linear and the third log10 |
+| Parameter         | Default  | Example                                  | Description                                                                                                            |
+|-------------------|----------|------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| title::String     | ""       | title="My Title"                         | The Title of The Figure,                                                                                               |
+| colormap          | :viridis | colormap=:thermal                        | The Colors of the [Lines](https://docs.makie.org/dev/explanations/colors)                                              |
+| color_feature     | nothing  | color_feature="weight"                   | The Color of the Lines will be based on the values of this selected feature. If nothing, the last feature will be used |
+| feature_labels    | nothing  | feature_labels=["Weight","Age"]          | Add your own Axis labels, just use the exact amount of labes as you have axis                                          |
+| feature_selection | nothing  | feature_selection=["weight","age"]       | Select, which features should be Displayed. If color_feature is not in this List, use the last one                     |
+| curve             | false    | curve=true                               | Show the Lines Curved                                                                                                  |
+| show_color_legend | nothing  | show_color_legend=true                   | Show the Color Legend. If parameter not set & color_feature not shown, it will be displayed automaticly                |
+| scale             | nothing  | scale=[identity, log, log2, log10, sqrt] | Choose, how each Axis should be scaled.                                                                                |
 
 
 # Examples
@@ -515,24 +515,23 @@ This function will return the y position in the scene, depending of the scale if
 function calc_y_coordinate(parsed_data, limits, height, offset, feature_index :: Number, sample_index :: Number, scale_list) :: Number
 
 	# linear factor between 0 and 1, depending on the value inside the feature
-	factor = (
-				(parsed_data[feature_index][sample_index] - limits[feature_index][1])
-				/
-				(limits[feature_index][2] - limits[feature_index][1])
-			)
+	factor = Float64
 
 	# get the scale of the current feature
 	scale = scale_list[feature_index]
 
-	# change the linear factor - when needed - with the equivalent function for a log distribution
-	# throws error when cscalijg parameter is not one of [identity, log2, log10]
-	if scale === identity
-	elseif scale === log2
-		factor = log_scale2(factor)
-	elseif scale === log10
-		factor = log_scale10(factor)
+	# create a factor with the equivalent function for a log/identity distribution
+	# throws error when scaling parameter is not one of [identity, log2, log10]
+	if scale in [identity, log, log2, log10, sqrt]
+		factor = calc_factor(
+			limits[feature_index][1],
+			limits[feature_index][2],
+			parsed_data[feature_index][sample_index],
+			scale
+		)
 	else
-		throw(ArgumentError("The scaling parameter '"*string(scale)*"' is currently not supported. Supported: [identity, log2, log10]"))
+		throw(ArgumentError("The scaling parameter '"*string(scale)*"' is currently not supported.
+			Supported: [identity, log, log2, log10, sqrt]"))
 	end
 
 	# return the y position. use the height depending on the factor (full/no height)
@@ -540,33 +539,24 @@ function calc_y_coordinate(parsed_data, limits, height, offset, feature_index ::
 end
 
 """
-    log_scale10(x::Float64)
+    calc_factor(min::T, max::T, x::T, fun::Function):: Float64 where {T<:Real}
 
 In Linear Axis represenatation, values between 0-1 are linear distributed.
 Due to the Logarithmfunction, we need to distribute the values with the given log values to match the axis
 
 ### Input:
-- value x, distributed between 0 and 1
+- min::T,
+- max::T,
+- x::T,
+- fun::Function --> [identity, log, log2, log10, sqrt]
 ### Output:
-- the log10 distribution, beween 0 and 1
+- the distribution with the given function beween 0 and 1
 """
-function log_scale10(x::Float64)
-	return log10(1+99*x)/2
-end
-
-"""
-    log_scale2(x::Float64)
-
-In Linear Axis represenatation, values between 0-1 are linear distributed.
-Due to the Logarithmfunction, we need to distribute the values with the given log values to match the axis
-
-### Input:
-- value x, distributed between 0 and 1
-### Output:
-- the log2 distribution, beween 0 and 1
-"""
-function log_scale2(x::Float64)
-	return log2(1 + 3 * x) / 2
+function calc_factor(min::T, max::T, x::T, fun::Function):: Float64 where {T<:Real}
+	max_log = fun(max)
+	min_log = fun(min)
+	x_log = fun(x)
+	return (x_log-min_log)/(max_log-min_log)
 end
 
 """

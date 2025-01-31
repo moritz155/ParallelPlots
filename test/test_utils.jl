@@ -20,7 +20,7 @@ function create_person_df(n_samples = 10)
 end
 
 function create_log_df(log = 10)
-    df = DataFrame(height=[log^1,log^4,log^5],weight=[log^5,log^3,log^2],age=[log^6,log^4,log^1],income=[log^2,log^4,log^6])
+    df = DataFrame(height=[log^1,log^4,log^5],weight=[log^5,log^3,log^2],age=[log^4,log^3,log^1],income=[log^2,log^3,log^6])
     return df
 end
 

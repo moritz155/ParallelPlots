@@ -17,7 +17,7 @@ using CairoMakie: save
     # create log10 data for easy visual check
     df = create_log_df(10)
     fig = parallelplot(df,
-        scale=[log10, identity, log10],
+        scale=[log10, sqrt, log10],
         feature_selection=["height","age","income"],
     )
     @test fig !== nothing
@@ -27,14 +27,6 @@ using CairoMakie: save
     @test_throws AssertionError begin
         fig = parallelplot(df,
             scale=[log10, identity, log10],
-            feature_selection=["height","weight","age","income"],
-        )
-    end
-
-    #  length of scale attributes does not fit the length of the axis/features
-    @test_throws ArgumentError begin
-        fig = parallelplot(df,
-            scale=[log10, identity, log10, sqrt],
             feature_selection=["height","weight","age","income"],
         )
     end
