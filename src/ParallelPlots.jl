@@ -17,10 +17,7 @@ checks the Input Data if the size is correct and no missing values are available
 ### Trows
 Throws error on wrong DF
 """
-function input_data_check(data::DataFrame)
-	if isnothing(data)
-		throw(ArgumentError("Data cannot be nothing"))
-	end
+function input_data_check(data::DataFrame)::Nothing
 	if size(data, 2) < 2 # otherwise there will be a nullpointer exception later
 		throw(ArgumentError("Data must have at least two columns, currently ("*string(size(data, 2))*")"))
 	end
@@ -63,13 +60,52 @@ FigureAxisPlot()
 julia> display(fig)
 CairoMakie.Screen{IMAGE}
 ```
+Using DrWatson with ParallelPlot
+```jldoctest
+julia> using DataFrames, DrWatson, ParallelPlots
 
+julia> function exec_simulation(d::Dict, results)
+           @unpack launch_angles, initial_velocities = d
+           max_height = initial_velocities * launch_angles
+           push!(results, [
+               initial_velocities,
+               launch_angles,
+               max_height,
+           ])
+           return results
+       end;
+
+julia> initial_velocities = [40.0, 50.0];
+
+julia> launch_angles = [30.0, 60.0];
+
+julia> allparams = Dict(
+           "initial_velocities" => initial_velocities,
+           "launch_angles" => launch_angles,
+       );
+
+julia> dicts = dict_list(allparams);
+
+julia> results = DataFrame(
+           initial_velocity=Float64[],
+           launch_angle=Float64[],
+           max_height=Float64[],
+       );
+
+julia> for d in dicts
+           results = exec_simulation(d, results)
+       end;
+
+julia> fig = parallelplot(results, curve=true, figure = (size = (1000, 600),));
+
+julia> display(fig);
+```
 ```@example
 # If you want to set the size of the plot
 julia> parallelplot( DataFrame(height=160:180,weight=60:80,age=20:40), figure = (resolution = (300, 300),) )
 ```
 ```
-# You can update as well the Graph with Observables
+# You can update the Graph with Observables as well 
 julia> df_observable = Observable(DataFrame(height=160:180,weight=60:80,age=20:40))
 julia> fig, ax, sc = parallelplot(df_observable)
 ```
@@ -82,7 +118,7 @@ julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40),ti
 julia> parallelplot(DataFrame(height=160:180,weight=reverse(60:80),age=20:40), feature_labels=["Height","Weight","Age"])
 ```
 ```
-# Adjust Color and and feature
+# Adjust Color and and Feature
 parallelplot(df,
 		# You choose which axis/feature should be in charge for the coloring
         color_feature="weight",
@@ -128,6 +164,10 @@ function Makie.plot!(pp::ParallelPlot)
 	# this helper function will update our observables
 	# whenever df_observable change
 	function update_plot(data)
+
+		if isnothing(data)
+			throw(ArgumentError("Data cannot be nothing"))
+		end
 
 		# check the given DataFrame
 		input_data_check(data)
@@ -344,10 +384,10 @@ Calculates the Color values for the Lines
 - color_max 	The max value of `color_values`. To Calculate the ColorRange
 """
 function calculate_color(pp::ParallelPlot, data::DataFrame) :: Tuple{AbstractString, Vector{Real}, Real, Real}
-	color_col = get_color_col(pp, data)
-    color_values = data[:,color_col]  # Get all values for selected feature
-    color_min = minimum(color_values)
-    color_max = maximum(color_values)
+	color_col:: AbstractString = get_color_col(pp, data)
+    color_values::Vector{Real} = data[:,color_col]  # Get all values for selected feature
+    color_min::Real = minimum(color_values)
+    color_max::Real = maximum(color_values)
 
 	return color_col, color_values, color_min, color_max
 
@@ -419,6 +459,7 @@ function draw_lines(
 	color_max
 	)
 	for i in 1:sampleSize
+		dataPoints = Vector{Point2f}(undef, numberFeatures)
 		# If Curved, Interpolate
 		if(pp.curve[] == false)
     		# calcuating the point respectivly of the width and height in the Screen
@@ -628,7 +669,7 @@ end
 
 
 """
-    interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)
+    interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)::Float64
 
 Interpolates the Y Value between the given current/last(x/y) point with the given x value.
 
@@ -638,7 +679,7 @@ Interpolates the Y Value between the given current/last(x/y) point with the give
 ### Output:
 - current, interpolated y Value
 """
-function interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)
+function interpolate(last_x::Float64, current_x::Float64, last_y::Float64, current_y::Float64, x::Float64)::Float64
 
 	# calculate the % of Pi related to x between two x points
 	x_pi = (x - last_x)/(current_x - last_x) * π
