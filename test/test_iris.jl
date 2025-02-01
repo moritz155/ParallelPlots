@@ -7,6 +7,7 @@ using DataFrames
 @testset "default call iris" begin
 
     # Generate sample multivariate data
+    ENV["DATADEPS_ALWAYS_ACCEPT"] = true
     iris = Iris()
 
     df = iris.dataframe
