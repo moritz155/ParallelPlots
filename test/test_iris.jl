@@ -4,7 +4,7 @@ using CairoMakie: save
 using MLDatasets
 using DataFrames
 
-@testset "default call curved" begin
+@testset "default call iris" begin
 
     # Generate sample multivariate data
     iris = Iris()
